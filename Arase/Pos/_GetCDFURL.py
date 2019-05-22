@@ -3,29 +3,25 @@ import time
 import os
 import numpy as np
 
-def _GetCDFURL(Date,L):
+def _GetCDFURL(Year,L):
 	'''
 	Retrieves the url(s) of the cdf file to be downloaded.
 	
 	Inputs:
-		Date: 32-bit integer date with format yyyymmdd.
+		Year: year
 		L: Level of the data 2 or 3 (integer)
 		
 	Returns:
 		urls,fnames
 	'''
-	#first let's get the url which will contain the link to the cdf file
-	yy = Date // 10000
-	mm = (Date % 10000) // 100
-	dd = Date % 100
-	
-	urls = ['https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/orb/def/{:04d}/'.format(yy),
+	#first let's get the url which will contain the link to the cdf files
+	urls = ['https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/orb/def/{:04d}/'.format(Year),
 			'https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/orb/l3/2016/tmp/',
-			'https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/orb/l3/{:04d}/'.format(yy)]
+			'https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/orb/l3/{:04d}/'.format(Year)]
 			
 	if L == 2:
 		url = urls[0]
-	elif L == 3 and yy == 2016:
+	elif L == 3 and Year == 2016:
 		url = urls[1]
 	else:
 		url = urls[2]
@@ -49,11 +45,11 @@ def _GetCDFURL(Date,L):
 	
 	
 	#now search for the line with the substring '.cdf"'
-	datestr = '{:08d}'.format(Date)
 	urls = []
 	fnames = []
+	yearstr = '{:04d}'.format(Year)
 	for i in range(0,n):
-		if '.cdf"' in lines[i] and datestr in lines[i]:
+		if '.cdf"' in lines[i] and yearstr in lines[i]:
 			s = lines[i].replace('<a','"').replace('</a>','"').replace('>','"').split('"')
 			for ss in s:
 				if '.cdf' in ss and not 'http' in ss:
