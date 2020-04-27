@@ -3,7 +3,7 @@ import time
 import os
 import numpy as np
 
-def _GetCDFURL(Year,Month,subcomp,L,prod):
+def _GetCDFURL(Year,Month,subcomp,L,prod=''):
 	'''
 	Retrieves the url(s) of the cdf file to be downloaded.
 	
@@ -21,9 +21,10 @@ def _GetCDFURL(Year,Month,subcomp,L,prod):
 	'''
 	#first let's get the url which will contain the link to the cdf files
 	url = 'https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/pwe/'+subcomp+'/l{:01d}/'.format(L)
-	if subcomp == 'hfa':
+	if subcomp == 'hfa' and L == 2:
 		url += 'spec/'
-	url += prod+'/'
+	if not prod == '':
+		url += prod+'/'	
 	
 	if not subcomp == 'wfc':
 		url += '{:04d}/{:02d}/'.format(Year,Month)

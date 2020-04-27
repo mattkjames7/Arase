@@ -3,8 +3,9 @@ import os
 import pysatCDF
 from .. import Globals
 from ._ReadDataIndex import _ReadDataIndex
+from ..Tools.ReadCDF import ReadCDF
 
-def ReadCDF(Date,subcomp,L,prod,ReturnCDF=False):
+def _ReadCDF(Date,subcomp,L,prod):
 	'''
 	Reads the CDF file containing the position of Arase.
 	
@@ -36,16 +37,17 @@ def ReadCDF(Date,subcomp,L,prod,ReturnCDF=False):
 		return None
 		
 	#read the file
-	try:
-		print(fname)
-		cdf = pysatCDF.CDF(fname)
-		if ReturnCDF:
-			return cdf
-		else:
-			data = cdf.data
-			meta = cdf.meta
-			return data,meta
-	except:
-		print('Reading CDF file failed')
-		return None
+	return ReadCDF(fname)
+#	try:
+#		print(fname)
+#		cdf = pysatCDF.CDF(fname)
+#		if ReturnCDF:
+#			return cdf
+#		else:
+#			data = cdf.data
+#			meta = cdf.meta
+#			return data,meta
+#	except:
+#		print('Reading CDF file failed')
+#		return None
 	
