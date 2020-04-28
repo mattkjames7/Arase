@@ -49,6 +49,7 @@ def ReadHFA(Date):
 		epoch = []
 		f = []
 		meta = []
+		dt = []
 		if not datah is None:
 			spec.append(datah[k])
 			date.append(out['DateH'])
@@ -56,6 +57,7 @@ def ReadHFA(Date):
 			epoch.append(out['EpochH'])
 			f.append(out['FH'])
 			meta.append(metah[k])
+			dt.append(datah['time_step'])
 		if not datal is None:
 			spec.append(datal[k])
 			date.append(out['DateL'])
@@ -63,7 +65,8 @@ def ReadHFA(Date):
 			epoch.append(out['EpochL'])
 			f.append(out['FL'])
 			meta.append(metal[k])
+			dt.append(datal['time_step'])
 			
-		out[fields[k]] = SpecCls(date,ut,epoch,f,spec,Meta=meta)
+		out[fields[k]] = SpecCls(date,ut,epoch,f,spec,Meta=meta,dt=dt)
 		
 	return out	

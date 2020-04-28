@@ -34,6 +34,6 @@ def ReadHFALow(Date):
 	#now to store the spectra
 	for k in list(fields.keys()):
 		spec = data[k]
-		out[fields[k]] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['F'],spec,Meta=meta[k])
+		out[fields[k]] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['F'],spec,Meta=meta[k],dt=data['time_step'])
 		
 	return out	

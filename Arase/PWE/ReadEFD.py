@@ -33,7 +33,11 @@ def ReadEFD(Date):
 	for k in list(fields.keys()):
 		spec = data[k]
 		f = data[meta[k]['DEPEND_1']]
-		out[fields[k]] = SpecCls(out['Date'],out['ut'],out['Epoch'],f,spec,Meta=meta[k])
+		if meta[k]['DEPEND_1'] == 'frequency':
+			bw = data['band_width']
+		else:
+			bw = np.ones(f.size,dtype='float32')
+		out[fields[k]] = SpecCls(out['Date'],out['ut'],out['Epoch'],f,spec,Meta=meta[k],dt=1.0,bw=bw)
 		
 	return out	
 				
