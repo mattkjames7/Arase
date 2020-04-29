@@ -4,7 +4,7 @@ import DateTimeTools as TT
 import RecarrayTools as RT
 import os
 
-def ReadFieldFootprintTraces(Date,Model='T96'):
+def ReadFieldTraces(Date,Model='T96'):
 	'''
 	Reads the footprint trace files.
 	
@@ -43,7 +43,7 @@ def ReadFieldFootprintTraces(Date,Model='T96'):
 			nt += tmp
 	
 	#create output array
-	dtype=[('Date','int32'),('ut','float32'),('MlatN','float32'),('MlatS','float32'),
+	dtype=[('Date','int32'),('ut','float32'),('utc','float64'),('MlatN','float32'),('MlatS','float32'),
 			('GlatN','float32'),('GlatS','float32'),('MlonN','float32'),('MlonS','float32'),
 			('GlonN','float32'),('GlonS','float32'),('MltN','float32'),('MltS','float32'),
 			('GltN','float32'),('GltS','float32'),('MltE','float32'),('Lshell','float32'),

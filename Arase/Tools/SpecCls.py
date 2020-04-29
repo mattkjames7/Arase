@@ -79,7 +79,7 @@ class SpecCls(object):
 		self._CalculateFrequencyLimits()
 		self._CalculateScale()
 		
-	def Plot(self,fig=None,maps=[1,1,0,0],ylog=True,scale=None,zlog=False):
+	def Plot(self,fig=None,maps=[1,1,0,0],ylog=False,scale=None,zlog=True):
 		#create the plot
 		if fig is None:
 			fig = plt
@@ -98,7 +98,10 @@ class SpecCls(object):
 			
 		#get color scale
 		if scale is None:
-			scale = self._scale
+			if zlog:
+				scale = self._logscale
+			else:
+				scale = self._scale
 		if zlog:
 			norm = colors.LogNorm()
 		else:
@@ -296,6 +299,7 @@ class SpecCls(object):
 		
 		'''
 		scale = [np.inf,-np.inf]
+		logscale = [np.inf,-np.inf]
 		
 		if isinstance(self.Spec,list):
 			n = len(self.Spec)
@@ -306,7 +310,23 @@ class SpecCls(object):
 					scale[0] = mn
 				if mx > scale[1]:
 					scale[1] = mx	
+			
+			for i in range(0,n):
+				ls = np.log10(self.Spec[i])
+				bad = np.where(ls <= 0)
+				ls[bad] = np.nan
+				mn = np.nanmin(ls)
+				mx = np.nanmax(ls)
+				if mn < logscale[0]:
+					logscale[0] = mn
+				if mx > logscale[1]:
+					logscale[1] = mx	
 		else:
 			scale = [np.nanmin(self.Spec),np.nanmax(self.Spec)]
+			ls = np.log10(self.Spec)
+			bad = np.where(ls <= 0)
+			ls[bad] = np.nan
+			logscale = [np.nanmin(ls),np.nanmax(ls)]
 		
 		self._scale = scale
+		self._logscale = logscale

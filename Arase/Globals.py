@@ -10,7 +10,7 @@ except:
 
 
 #data type for the position
-PosDtype = [('Date','int32'),('ut','float32'),
+PosDtype = [('Date','int32'),('ut','float32'),('utc','float64'),
 		('Xgeo','float32'),('Ygeo','float32'),('Zgeo','float32'),
 		('Xgm','float32'),('Ygm','float32'),('Zgm','float32'),
 		('Xgse','float32'),('Ygse','float32'),('Zgse','float32'),

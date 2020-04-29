@@ -4,21 +4,17 @@ from .. import Globals
 from ..Tools.Downloading._ReadDataIndex import _ReadDataIndex
 from ..Tools.ReadCDF import ReadCDF
 
-def _ReadCDF(Date,subcomp,L,prod):
+def _ReadCDF(Date,L,prod):
 	'''
 	Reads the CDF file containing the position of Arase.
 	
 	
 	
 	'''
-
-	if subcomp == 'hfa' and L == 3:
-		idxfname = Globals.DataPath + 'PWE/Index-{:s}-L{:01d}.dat'.format(subcomp,L)
-		datapath = Globals.DataPath + 'PWE/l{:01d}/'.format(subcomp,L)
-	else:	
-		idxfname = Globals.DataPath + 'PWE/Index-{:s}-L{:01d}-{:s}.dat'.format(subcomp,L,prod)
-		datapath = Globals.DataPath + 'PWE/l{:01d}/{:s}/'.format(subcomp,L,prod)
-
+	
+	idxfname = Globals.DataPath + 'MEPi/Index-L{:01d}-{:s}.dat'.format(L,prod)
+	datapath = Globals.DataPath + 'MEPi/l{:01d}/{:s}/'.format(L,prod)
+	
 	#read the data index
 	idx = _ReadDataIndex(idxfname)
 
