@@ -6,17 +6,14 @@ from ..Tools.CDFEpochToUT import CDFEpochToUT
 def ReadHFAHigh(Date):
 	
 	#List the fields to output
-	fields = {	'spectra_eu' : 'SpectraEu',
-				'spectra_ev' : 'SpectraEv',
-				'spectra_bgamma' : 'SpectraBgamma',
-				'spectra_esum' : 'SpectraEsum',
-				'spectra_er' : 'SpectraEr',
-				'spectra_el' : 'SpectraEl',
-				'spectra_e_mix' : 'SpectraEmix',
-				'spectra_e_ar' : 'SpectraEAR',
-				'spectra_eu_ev' : 'SpectraEuEv',
-				'spectra_eu_bg' : 'SpectraEuBgamma',
-				'spectra_ev_bg' : 'SpectraEvBgamma'}
+	fields = {	'spectra_eu' : 		('SpectraEu','Frequency, $f$ (kHz)','Power spectra $E_u^2$ (mV$^2$/m$^2$/Hz)'),
+				'spectra_ev' : 		('SpectraEv','Frequency, $f$ (kHz)','Power spectra $E_v^2$ (mV$^2$/m$^2$/Hz)'),
+				'spectra_bgamma' : 	('SpectraBgamma','Frequency, $f$ (kHz)','Power spectra $B_{\gamma}^2$ (pT$^2$/Hz)'),
+				'spectra_esum' : 	('SpectraEsum','Frequency, $f$ (kHz)','Power spectra $E_u^2 + E_v^2$ (mV$^2$/m$^2$/Hz)'),
+				'spectra_er' : 		('SpectraEr','Frequency, $f$ (kHz)','Power spectra $E_{right}^2$ (mV$^2$/m$^2$/Hz)'),
+				'spectra_el' : 		('SpectraEl','Frequency, $f$ (kHz)','Power spectra $E_{left}^2$ (mV$^2$/m$^2$/Hz)'),
+				'spectra_e_mix' : 	('SpectraEmix','Frequency, $f$ (kHz)','Power spectra $E_u^2$ or $E_v^2$ or $E_u^2 + E_v^2$ (mV$^2$/m$^2$/Hz)'),
+				'spectra_e_ar' : 	('SpectraEAR','Frequency, $f$ (kHz)','Spectra Axial Ratio LH:-1/RH:+1'),}
 				
 	#read the CDF file
 	data,meta = _ReadCDF(Date,'hfa',2,'high')		
@@ -34,6 +31,14 @@ def ReadHFAHigh(Date):
 	#now to store the spectra
 	for k in list(fields.keys()):
 		spec = data[k]
-		out[fields[k]] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['F'],spec,Meta=meta[k],dt=data['time_step'])
+
+		field,ylabel,zlabel = fields[k]
+		if k == 'spectra_e_ar':
+			ScaleType = 'range'
+		else:
+			ScaleType = 'positive'
+		bad = np.where(spec == -999.9)
+		spec[bad] = np.nan
+		out[field] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['F'],spec,Meta=meta[k],dt=data['time_step']/3600.0,ylabel=ylabel,zlabel=zlabel,ScaleType=ScaleType)
 		
 	return out	

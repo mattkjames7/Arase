@@ -5,15 +5,38 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from .ContUT import ContUT
 from .DTPlotLabel import DTPlotLabel
 
+defargs = {	'Meta' : None,
+			'dt' : None,
+			'bw' : None,
+			'xlabel' : 'UT',
+			'ylabel' : 'Frequency, $f$',
+			'zlabel' : '',
+			'ylog' : False,
+			'zlog' : False, 
+			'ScaleType' : 'range',
+			'nStd' : 2}
+
+
 class SpecCls(object):
-	def __init__(self,Date,ut,Epoch,Freq,Spec,Meta=None,dt=None,bw=None):
+	def __init__(self,Date,ut,Epoch,Freq,Spec,**kwargs):
 		#store the input variables
 		self.Date = Date
 		self.ut = ut
 		self.Epoch = Epoch
 		self.Freq = Freq
 		self.Spec = Spec
-		self.Meta = Meta
+		
+		#and the keywords
+		self.Meta = kwargs.get('Meta',defargs['Meta'])
+		dt = kwargs.get('dt',defargs['dt'])
+		bw = kwargs.get('bw',defargs['bw'])
+		self.xlabel = kwargs.get('xlabel',defargs['xlabel'])
+		self.ylabel = kwargs.get('ylabel',defargs['ylabel'])
+		self.zlabel = kwargs.get('zlabel',defargs['zlabel'])
+		self._ylog = kwargs.get('ylog',defargs['ylog'])
+		self._zlog = kwargs.get('zlog',defargs['zlog'])
+		self._ScaleType = kwargs.get('ScaleType',defargs['ScaleType'])
+		self._nStd = kwargs.get('nStd',defargs['nStd'])
 		
 		#calculate continuous time axis
 		if isinstance(self.ut,list):
@@ -79,7 +102,7 @@ class SpecCls(object):
 		self._CalculateFrequencyLimits()
 		self._CalculateScale()
 		
-	def Plot(self,fig=None,maps=[1,1,0,0],ylog=False,scale=None,zlog=True):
+	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None):
 		#create the plot
 		if fig is None:
 			fig = plt
@@ -89,14 +112,18 @@ class SpecCls(object):
 		#set axis limits
 		ax.set_xlim(self._utlim)
 		ax.set_ylim(self._flim)
+		if ylog is None:
+			ylog = self._ylog
 		if ylog:
 			ax.set_yscale('log')
 			
 		#and labels
-		ax.set_xlabel('UT')
-		ax.set_ylabel('Frequency, $f$')
+		ax.set_xlabel(self.xlabel)
+		ax.set_ylabel(self.ylabel)
 			
 		#get color scale
+		if zlog is None:
+			zlog = self._zlog
 		if scale is None:
 			if zlog:
 				scale = self._logscale
@@ -118,16 +145,24 @@ class SpecCls(object):
 			sm = self._PlotSpectrogram(ax,-1,scale,norm)
 
 		#sort the UT axis out
-		DTPlotLabel(ax,self.utc,self.Date)
+		if isinstance(self.utc,list):
+			tdate = np.concatenate(self.Date)
+			tutc = np.concatenate(self.utc)
+			srt = np.argsort(tutc)
+			tdate = tdate[srt]
+			tutc = tutc[srt]
+		else:
+			tdate = self.Date
+			tutc = self.utc
+		DTPlotLabel(ax,tutc,tdate)
 
 
 		#colorbar
-		ztitle = ''
 		divider = make_axes_locatable(ax)
 		cax = divider.append_axes("right", size="5%", pad=0.05)
 
 		cbar = fig.colorbar(sm,cax=cax) 
-		cbar.set_label(ztitle)		
+		cbar.set_label(self.zlabel)		
 
 
 	def _PlotSpectrogram(self,ax,I,scale,norm):
@@ -163,9 +198,11 @@ class SpecCls(object):
 			Spec = self.Spec[I]		
 		
 		#get the frequency band limits
+		bad = np.where(np.isnan(f))
+		f[bad] = 0.0
 		f0 = f - 0.5*bw
 		f1 = f + 0.5*bw
-		
+
 		#get the ut array limits
 		if np.size(dt) == 1:
 			dt = np.zeros(ut.size,dtype='float32') + dt
@@ -174,8 +211,13 @@ class SpecCls(object):
 		
 		
 		#look for gaps in ut
-		isgap = (utc[1:] - utc[:-1]) > 1.1*dt[:-1]
-		gaps = np.where(isgap)[0]
+		if len(f.shape) > 1:
+			isgap = ((utc[1:] - utc[:-1]) > 1.1*dt[:-1]) | ((f[1:,:] - f[:-1,:]) != 0).any(axis=1)
+			nf = f.shape[1]
+		else:
+			isgap = (utc[1:] - utc[:-1]) > 1.1*dt[:-1]
+			nf = f.size
+		gaps = np.where(isgap)[0] + 1
 		if gaps.size == 0:
 			#no gaps
 			i0 = [0]
@@ -183,25 +225,28 @@ class SpecCls(object):
 		else:
 			#lots of gaps
 			i0 = np.append(0,gaps)
-			i1 = np.append(gaps + 1,utc.size)
+			i1 = np.append(gaps,utc.size)
 		ng = np.size(i0)
 		
 		#loop through each continuous block of utc
-		nf = f.size
+		
 		cmap = plt.cm.get_cmap('gnuplot')
 		for i in range(0,ng):
-			ttmp = np.append(t0[i0[i]:i1[i]],t1[i1[i]-1])
+			ttmp = np.append(t0[i0[i]:i1[i]-1],t1[i1[i]-1])
 			st = Spec[i0[i]:i1[i]]
 			for j in range(0,nf):				
-				ftmp = np.array([f0[j],f1[j]])
-				
-				#plot each row of frequency
-				tg,fg = np.meshgrid(ttmp,ftmp)
-				
-				s = np.array([st[:,j]])
-				
-				sm = ax.pcolormesh(tg,fg,s,cmap=cmap,norm=norm,vmin=scale[0],vmax=scale[1])
-		
+				if len(f.shape) > 1:
+					ftmp = np.array([f0[i0[i],j],f1[i0[i],j]])
+				else:
+					ftmp = np.array([f0[j],f1[j]])
+				if np.isfinite(ftmp).all():
+					#plot each row of frequency
+					tg,fg = np.meshgrid(ttmp,ftmp)
+					
+					s = np.array([st[:,j]])
+					
+					sm = ax.pcolormesh(tg,fg,s,cmap=cmap,norm=norm,vmin=scale[0],vmax=scale[1])
+			
 		return sm
 		
 	def _CalculateTimeLimits(self):
@@ -295,7 +340,7 @@ class SpecCls(object):
 		
 	def _CalculateScale(self):
 		'''
-		Calculate the scale limits for the plot.
+		Calculate the default scale limits for the plot.
 		
 		'''
 		scale = [np.inf,-np.inf]
@@ -304,29 +349,68 @@ class SpecCls(object):
 		if isinstance(self.Spec,list):
 			n = len(self.Spec)
 			for i in range(0,n):
-				mn = np.nanmin(self.Spec[i])
-				mx = np.nanmax(self.Spec[i])
-				if mn < scale[0]:
-					scale[0] = mn
-				if mx > scale[1]:
-					scale[1] = mx	
-			
-			for i in range(0,n):
 				ls = np.log10(self.Spec[i])
-				bad = np.where(ls <= 0)
+				bad = np.where(self.Spec[i] <= 0)
 				ls[bad] = np.nan
-				mn = np.nanmin(ls)
-				mx = np.nanmax(ls)
-				if mn < logscale[0]:
-					logscale[0] = mn
-				if mx > logscale[1]:
-					logscale[1] = mx	
+				
+				if self._ScaleType == 'std':
+					mu = np.nanmean(self.Spec[i])
+					std = np.std(self.Spec[i])
+					
+					lmu = np.nanmean(ls)
+					lstd = np.std(ls)
+					
+					tmpscale = [mu - self._nStd*std, mu + self._nStd*std]
+					tmplogscale = 10**np.array([lmu - self._nStd*lstd, lmu + self._nStd*lstd])					
+				
+				elif self._ScaleType == 'positive':
+					#calculate the scale based on all values being positive 
+					std = np.sqrt((1.0/np.sum(self.Spec[i].size))*np.nansum((self.Spec[i])**2))
+					lstd = np.sqrt(((1.0/np.sum(np.isfinite(ls))))*np.nansum((ls)**2))
+					
+					tmpscale = [0.0,std*self._nStd]
+					tmplogscale = 10**np.array([np.nanmin(ls),lstd*self._nStd])			
+				else:
+					#absolute range
+					tmpscale = [np.nanmin(self.Spec[i]),np.nanmax(self.Spec[i])]
+					tmplogscale = 10**np.array([np.nanmin(ls),np.nanmax(ls)])
+
+
+				if tmpscale[0] < scale[0]:
+					scale[0] = tmpscale[0]
+				if tmpscale[1] > scale[1]:
+					scale[1] = tmpscale[1]
+			
+				if tmplogscale[0] < logscale[0]:
+					logscale[0] = tmplogscale[0]
+				if tmplogscale[1] > logscale[1]:
+					logscale[1] = tmplogscale[1]
 		else:
-			scale = [np.nanmin(self.Spec),np.nanmax(self.Spec)]
 			ls = np.log10(self.Spec)
-			bad = np.where(ls <= 0)
+			bad = np.where(self.Spec <= 0)
 			ls[bad] = np.nan
-			logscale = [np.nanmin(ls),np.nanmax(ls)]
+			if self._ScaleType == 'std':
+				#calculate the default limits using the standard deviation
+				mu = np.nanmean(self.Spec)
+				std = np.std(self.Spec)
+				
+				lmu = np.nanmean(ls)
+				lstd = np.std(ls)
+				
+				scale = [mu - self._nStd*std, mu + self._nStd*std]
+				logscale = 10**np.array([lmu - self._nStd*lstd, lmu + self._nStd*lstd])
+			elif self._ScaleType == 'positive':
+				#calculate the scale based on all values being positive 
+				std = np.sqrt((1.0/np.sum(self.Spec.size))*np.nansum((self.Spec)**2))
+				lstd = np.sqrt(((1.0/np.sum(np.isfinite(ls))))*np.nansum((ls)**2))
+				
+				scale = [0.0,std*self._nStd]
+				logscale = 10**np.array([np.nanmin(ls),lstd*self._nStd])
+				
+			else:
+				#absolute range
+				scale = [np.nanmin(self.Spec),np.nanmax(self.Spec)]
+				logscale = 10**np.array([np.nanmin(ls),np.nanmax(ls)])
 		
 		self._scale = scale
 		self._logscale = logscale

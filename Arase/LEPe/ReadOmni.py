@@ -18,7 +18,10 @@ def ReadOmni(Date):
 	
 	#the energy arrays
 	out['Energy'] = data['FEDO_Energy']
-	
+	emid = np.mean(out['Energy'],axis=1)
+	bw = out['Energy'][:,1,:] - out['Energy'][:,0,:]
+	out['bw'] = bw
+	out['emid'] = emid
 
 	#replace bad data
 	s = data['FEDO']
@@ -26,6 +29,6 @@ def ReadOmni(Date):
 	s[bad] = np.nan
 	
 	#now to store the spectra
-	out['Spectra'] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta['FEDO'])
+	out['Spectra'] = SpecCls(out['Date'],out['ut'],out['Epoch'],emid,s,Meta=meta['FEDO'],bw=bw)
 		
 	return out	

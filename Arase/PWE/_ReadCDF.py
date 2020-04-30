@@ -13,11 +13,12 @@ def _ReadCDF(Date,subcomp,L,prod):
 	'''
 
 	if subcomp == 'hfa' and L == 3:
-		idxfname = Globals.DataPath + 'PWE/Index-{:s}-L{:01d}.dat'.format(subcomp,L)
-		datapath = Globals.DataPath + 'PWE/l{:01d}/'.format(subcomp,L)
+		idxfname = Globals.DataPath + 'PWE/Index-L{:01d}-{:s}.dat'.format(L,subcomp)
+		datapath = Globals.DataPath + 'PWE/{:s}/L{:01d}/'.format(subcomp,L)
 	else:	
-		idxfname = Globals.DataPath + 'PWE/Index-{:s}-L{:01d}-{:s}.dat'.format(subcomp,L,prod)
-		datapath = Globals.DataPath + 'PWE/l{:01d}/{:s}/'.format(subcomp,L,prod)
+		idxfname = Globals.DataPath + 'PWE/Index-L{:01d}-{:s}-{:s}.dat'.format(L,subcomp,prod)
+		datapath = Globals.DataPath + 'PWE/{:s}/L{:01d}/{:s}/'.format(subcomp,L,prod)
+
 
 	#read the data index
 	idx = _ReadDataIndex(idxfname)
