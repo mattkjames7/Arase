@@ -35,8 +35,15 @@ def ReadOmni(Date):
 	bad = np.where(H < 0)
 	H[bad] = np.nan
 	
+	#labels
+	zlabelH = 'Omni-directional flux of HEP-H (1/keV-sr-s-cm$^2$)'
+	zlabelL = 'Omni-directional flux of HEP-L (1/keV-sr-s-cm$^2$)'
+	ylabelH = 'Energy (keV)'
+	ylabelL = 'Energy (keV)'
+	
+	
 	#now to store the spectra
-	out['SpectraL'] = SpecCls(out['DateL'],out['utL'],out['EpochL'],eL,L,Meta=meta['FEDO_L'])
-	out['SpectraH'] = SpecCls(out['DateH'],out['utH'],out['EpochH'],eH,H,Meta=meta['FEDO_H'])
+	out['eFluxL'] = SpecCls(out['DateL'],out['utL'],out['EpochL'],eL,L,Meta=meta['FEDO_L'],ylabel=ylabelL,zlabel=zlabelL,ylog=True,zlog=True,ScaleType='positive')
+	out['eFluxH'] = SpecCls(out['DateH'],out['utH'],out['EpochH'],eH,H,Meta=meta['FEDO_H'],ylabel=ylabelH,zlabel=zlabelH,ylog=True,zlog=True,ScaleType='positive')
 		
 	return out	

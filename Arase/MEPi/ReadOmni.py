@@ -23,28 +23,30 @@ def ReadOmni(Date):
 	
 
 	#replace bad data
-	fields = {	'FPDO' : 'HpFlux',
-				'FHE2DO' : 'HeppFlux',
-				'FHEDO' : 'HepFlux',
-				'FOPPDO' : 'OppFlux',
-				'FODO' : 'OpFlux',
-				'FO2PDO' : 'O2pFlux',
-				'FPDO_tof' : 'HpFluxTOF',
-				'FHE2DO_tof' : 'HeppFluxTOF',
-				'FHEDO_tof' : 'HepFluxTOF',
-				'FOPPDO_tof' : 'OppFluxTOF',
-				'FODO_tof' : 'OpFluxTOF',
-				'FO2PDO_tof' : 'O2pFluxTOF' }
+	fields = {	'FPDO' : 		('H+Flux','Energy (keV/q)','Omni-directional H$^+$ flux (#/s-cm2-sr-keV/q)'),
+				'FHE2DO' : 		('He++Flux','Energy (keV/q)','Omni-directional He$^{++}$ flux (#/s-cm2-sr-keV/q)'),
+				'FHEDO' : 		('He+Flux','Energy (keV/q)','Omni-directional He$^+$ flux (#/s-cm2-sr-keV/q)'),
+				'FOPPDO' : 		('O++Flux','Energy (keV/q)','Omni-directional O$^{++}$ flux (#/s-cm2-sr-keV/q)'),
+				'FODO' : 		('O+Flux','Energy (keV/q)','Omni-directional O$^+$ flux (#/s-cm2-sr-keV/q)'),
+				'FO2PDO' : 		('O2+Flux','Energy (keV/q)','Omni-directional O$_2^+$ flux (#/s-cm2-sr-keV/q)'),
+				'FPDO_tof' : 	('H+FluxTOF','Energy (keV/q)','Omni-directional H$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
+				'FHE2DO_tof' : 	('He++FluxTOF','Energy (keV/q)','Omni-directional He$^{++}$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
+				'FHEDO_tof' : 	('He+FluxTOF','Energy (keV/q)','Omni-directional He$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
+				'FOPPDO_tof' : 	('O++FluxTOF','Energy (keV/q)','Omni-directional O$^{++}$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
+				'FODO_tof' : 	('O+FluxTOF','Energy (keV/q)','Omni-directional O$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
+				'FO2PDO_tof' : 	('O2+FluxTOF','Energy (keV/q)','Omni-directional O$_2^+$ Flux for TOF data (#/s-cm2-sr-keV/q)') }
 	
 	for k in list(fields.keys()):
 		s = data[k]
 		bad = np.where(s < 0)
 		s[bad] = np.nan
 		
+		field,ylabel,zlabel = fields[k]
+		
 		#now to store the spectra
 		if '_tof' in k:
-			out[fields[k]] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k])
+			out[field] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k],ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 		else:
-			out[fields[k]] = SpecCls(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k])
+			out[field] = SpecCls(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k],ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 			
 	return out	

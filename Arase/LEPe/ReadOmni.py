@@ -28,7 +28,12 @@ def ReadOmni(Date):
 	bad = np.where(s < 0)
 	s[bad] = np.nan
 	
+	#plot labels
+	ylabel = 'Energy (eV)'
+	zlabel = 'Omni-directional number flux (#/s-cm2-sr-eV)'
+	
+	
 	#now to store the spectra
-	out['Spectra'] = SpecCls(out['Date'],out['ut'],out['Epoch'],emid,s,Meta=meta['FEDO'],bw=bw)
+	out['eFlux'] = SpecCls(out['Date'],out['ut'],out['Epoch'],emid,s,Meta=meta['FEDO'],bw=bw,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 		
 	return out	

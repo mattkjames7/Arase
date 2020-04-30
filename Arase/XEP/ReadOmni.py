@@ -5,10 +5,7 @@ from ..Tools.CDFEpochToUT import CDFEpochToUT
 
 def ReadOmni(Date):
 	
-	#List the fields to output
-	fields = {	'FEDO_SSD' : 'SpectraSSD',
-				'FEDO_GSO' : 'SpectraGSO'}
-				
+		
 	#read the CDF file
 	data,meta = _ReadCDF(Date,2,'omniflux')		
 	
@@ -36,8 +33,15 @@ def ReadOmni(Date):
 	bad = np.where(gso < 0)
 	gso[bad] = np.nan
 	
+	#plot labels
+	zlabelS = 'Omni-directional flux of XEP SSD (1/keV-sr-s-cm$^2$)'
+	ylabelS = 'Energy (keV)'
+	zlabelG = 'Omni-directional flux of XEP GSO (1/keV-sr-s-cm$^2$)'
+	ylabelG = 'Energy (keV)'
+	
+	
 	#now to store the spectra
-	out['SpectraSSD'] = SpecCls(out['Date'],out['ut'],out['Epoch'],essd,ssd,Meta=meta['FEDO_SSD'])
-	out['SpectraGSO'] = SpecCls(out['Date'],out['ut'],out['Epoch'],egso,gso,Meta=meta['FEDO_GSO'])
+	out['eFluxSSD'] = SpecCls(out['Date'],out['ut'],out['Epoch'],essd,ssd,Meta=meta['FEDO_SSD'],ylabel=ylabelS,zlabel=zlabelS,ylog=True,zlog=True,ScaleType='positive')
+	out['eFluxGSO'] = SpecCls(out['Date'],out['ut'],out['Epoch'],egso,gso,Meta=meta['FEDO_GSO'],ylabel=ylabelG,zlabel=zlabelG,ylog=True,zlog=True,ScaleType='positive')
 		
 	return out	

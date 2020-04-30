@@ -54,11 +54,11 @@ class SpecCls(object):
 				n = len(ut)
 				self.dt = []
 				for i in range(0,n):
-					dt = 3600.0*(ut[i][1:] - ut[i][:-1])
+					dt = (ut[i][1:] - ut[i][:-1])
 					u,c = np.unique(dt,return_counts=True)
 					self.dt.append(u[np.where(c == c.max())[0][0]])
 			else:
-				dt = 3600.0*(ut[1:] - ut[:-1])
+				dt = (ut[1:] - ut[:-1])
 				u,c = np.unique(dt,return_counts=True)
 				self.dt = u[np.where(c == c.max())[0][0]]
 		elif np.size(dt) == 1 and not isinstance(dt,list):
@@ -111,11 +111,13 @@ class SpecCls(object):
 		
 		#set axis limits
 		ax.set_xlim(self._utlim)
-		ax.set_ylim(self._flim)
 		if ylog is None:
 			ylog = self._ylog
 		if ylog:
 			ax.set_yscale('log')
+			ax.set_ylim(self._logflim)
+		else:
+			ax.set_ylim(self._flim)
 			
 		#and labels
 		ax.set_xlabel(self.xlabel)
@@ -146,6 +148,7 @@ class SpecCls(object):
 
 		#sort the UT axis out
 		if isinstance(self.utc,list):
+			
 			tdate = np.concatenate(self.Date)
 			tutc = np.concatenate(self.utc)
 			srt = np.argsort(tutc)
@@ -154,6 +157,7 @@ class SpecCls(object):
 		else:
 			tdate = self.Date
 			tutc = self.utc
+
 		DTPlotLabel(ax,tutc,tdate)
 
 
@@ -163,7 +167,7 @@ class SpecCls(object):
 
 		cbar = fig.colorbar(sm,cax=cax) 
 		cbar.set_label(self.zlabel)		
-
+		return ax
 
 	def _PlotSpectrogram(self,ax,I,scale,norm):
 		'''
@@ -300,6 +304,7 @@ class SpecCls(object):
 		'''
 		#initialize frequency limits
 		flim = [0.0,-np.inf]
+		logflim = [np.inf,-np.inf]
 		
 		#check if ut is a list or a single array
 		fislist = isinstance(self.Freq,list)
@@ -311,32 +316,76 @@ class SpecCls(object):
 		#3. Both F and bw are lists of arrays
 		if not fislist and not bislist:
 			#both single arrays
-			flim = [np.nanmin(self.Freq - self.bw/2.0),np.nanmax(self.Freq + self.bw/2.0)]
+			f0 = self.Freq - self.bw/2.0
+			f1 = self.Freq + self.bw/2.0
+			
+			flim = [np.nanmin(f0),np.nanmax(f1)]
+			lf0 = np.log10(f0)
+			lf1 = np.log10(f1)
+			bad = np.where(self.Freq <= 0.0)
+			lf0[bad] = np.nan
+			lf1[bad] = np.nan
+			
+			logflim = 10**np.array([np.nanmin(lf0),np.nanmax(lf1)])
+			
+			
 		elif fislist and not bislist:
 			#shared bw array
-		
+
+					
 			#loop through each array
 			n = len(self.Freq)
 			for i in range(0,n):
-				mn = np.nanmin(self.Freq[i] - self.bw/2.0)
-				mx = np.nanmax(self.Freq[i] + self.bw/2.0)
+				f0 = self.Freq[i] - self.bw/2.0
+				f1 = self.Freq[i] + self.bw/2.0
+				mn = np.nanmin(f0)
+				mx = np.nanmax(f1)
 				if mn < flim[0]:
 					flim[0] = mn
 				if mx > flim[1]:
 					flim[1] = mx
+
+				lf0 = np.log10(f0)
+				lf1 = np.log10(f1)
+				bad = np.where(self.Freq[i] <= 0.0)
+				lf0[bad] = np.nan
+				lf1[bad] = np.nan
+
+				lmn = np.nanmin(lf0)
+				lmx = np.nanmax(lf1)
+				if lmn < logflim[0]:
+					logflim[0] = lmn
+				if lmx > logflim[1]:
+					logflim[1] = lmx
+
 		elif fislist and bislist:
 			#loop through each array
 			n = len(self.Freq)
 			for i in range(0,n):
-				mn = np.nanmin(self.Freq[i] - self.bw[i]/2.0)
-				mx = np.nanmax(self.Freq[i] + self.bw[i]/2.0)
+				f0 = self.Freq[i] - self.bw[i]/2.0
+				f1 = self.Freq[i] + self.bw[i]/2.0
+				mn = np.nanmin(f0)
+				mx = np.nanmax(f1)
 				if mn < flim[0]:
 					flim[0] = mn
 				if mx > flim[1]:
 					flim[1] = mx
 
+				lf0 = np.log10(f0)
+				lf1 = np.log10(f1)
+				bad = np.where(self.Freq[i] <= 0.0)
+				lf0[bad] = np.nan
+				lf1[bad] = np.nan
+
+				lmn = np.nanmin(lf0)
+				lmx = np.nanmax(lf1)
+				if lmn < logflim[0]:
+					logflim[0] = lmn
+				if lmx > logflim[1]:
+					logflim[1] = lmx
 
 		self._flim = flim
+		self._logflim = logflim
 		
 	def _CalculateScale(self):
 		'''

@@ -19,27 +19,30 @@ def ReadOmni(Date):
 
 
 	#replace bad data
-	fields = {	'FPDO' : 'Hp',
-				'FHEDO' : 'Hep',
-				'FODO' : 'Op'}
+	fields = {	'FPDO' : 	('H+','Energy (keV)',r'Omni H$^+$ flux (1/keV-sr-s-cm$^2$)'),
+				'FHEDO' : 	('He+','Energy (keV)',r'Omni He$^+$ flux (1/keV-sr-s-cm$^2$)'),
+				'FODO' : 	('O+','Energy (keV)',r'Omni O$^+$ flux (1/keV-sr-s-cm$^2$)'),}
 	
 	for k in list(fields.keys()):
 		s = data[k]
 		bad = np.where(s < 0)
 		s[bad] = np.nan
 		
-		kout = fields[k]
+		#get the base field name
+		kout,ylabel,zlabel = fields[k]
 		
-		out['Energy'+kout] = data[k+'_Energy']
+		#output spectra fields name
+		kspec = kout + 'Flux'
 		
+		#energy field name
+		ke = 'Energy' + kout
+		ke_cdf = k + '_Energy'
+		
+		#get the energy bins
+		out[ke] = data[ke_cdf]
 		
 		#now to store the spectra
-		out[kout+'Flux'] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['Energy'+kout],s,Meta=meta[k])
-	
-
-
-	
-
-	
+		out[kspec] = SpecCls(out['Date'],out['ut'],out['Epoch'],out[ke],s,Meta=meta[k],ylabel=ylabel,zlabel=zlabel,ScaleType='positive',ylog=True,zlog=True)
+		
 
 	return out	
