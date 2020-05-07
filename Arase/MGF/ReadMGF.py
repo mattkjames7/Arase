@@ -4,8 +4,33 @@ from ..Tools.CDFEpochToUT import CDFEpochToUT
 
 def ReadMGF(Date):
 	'''
-	Reads density measured using UH frequency.
-	'''
+	Reads the level 2 8sec data product for a given date.
+	
+	Inputs
+	======
+	Date : int
+		Integer date in the format yyyymmdd
+	
+	Returns
+	=======
+	data : numpy.recarray
+		Contains the following fields:
+				'Date' : int32
+				'ut' : float32
+				'Epoch' : int64
+				'BxGSE' : float32
+				'ByGSE' : float32
+				'BzGSE' : float32
+				'BxGSM' : float32
+				'ByGSM' : float32
+				'BzGSM' : float32
+				'BxSM' : float32
+				'BySM' : float32
+				'BzSM' : float32
+				'B' : float32	
+		
+
+	'''	
 
 	#read the CDF file
 	data,meta = _ReadCDF(Date,2,'8sec')		

@@ -4,22 +4,39 @@ from ..Tools.Downloading._DownloadData import _DownloadData
 
 def DownloadData(subcomp,L,prod='',StartYear=2016,EndYear=2019,Overwrite=False):
 	'''
-	Downloads Arase PWE data.
+	Downloads Arase PWE data. This routine will look for newer versions
+	of existing data too.
 
 	Inputs
 	======
 	subcomp : string
-		Name of sub component of instrument: 'efd'|'hfa'|'ofa'
+		Name of sub component of instrument
 	L : int
-		Level of data (2 or 3)
-	prod : 
-		Data product (depends on L and subcomp)
-			efd	2	'E_spin'|'pot'|'spec'
-			hfa	2	'high'|'low'|'monit'
-			hfa	3	'' (no product needed)
-			ofa	2	'complex'|'matrix'|'spec'
-		
-	
+		Level of data to download
+	prod : str
+		Data product to download
+	StartYear : int
+		Year to start search for new data
+	EndYear : int
+		Last year to search for data
+	Overwrite : bool
+		Overwrites existing data if True
+
+	Available data products
+	=======================
+	subcomp		L		prod
+	efd			2		'E_spin'
+	efd			2		'pot'
+	efd			2		'spec'
+	hfa			2		'high'
+	hfa			2		'low'
+	hfa			2		'monit'
+	hfa			3		''
+	ofa			2		'complex'
+	ofa			2		'matrix'
+	ofa			2		'spec'
+
+
 	'''
 
 	url0 = 'https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/pwe/{:s}/l{:01d}/'.format(subcomp,L)

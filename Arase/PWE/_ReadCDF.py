@@ -6,9 +6,42 @@ from ..Tools.ReadCDF import ReadCDF
 
 def _ReadCDF(Date,subcomp,L,prod):
 	'''
-	Reads the CDF file containing the position of Arase.
+	Reads the CDF file containing Arase XEP data.
+
+	Inputs
+	======
+	Date : int
+		Integer date in the format yyyymmdd
+	subcomp : string
+		Name of sub component of instrument
+	L : int
+		Level of data to download
+	prod : str
+		Data product to download
+
+
+	Available data products
+	=======================
+	subcomp		L		prod
+	efd			2		'E_spin'
+	efd			2		'pot'
+	efd			2		'spec'
+	hfa			2		'high'
+	hfa			2		'low'
+	hfa			2		'monit'
+	hfa			3		''
+	ofa			2		'complex'
+	ofa			2		'matrix'
+	ofa			2		'spec'
 	
-	
+	Returns
+	=======
+	data : dict
+		Dictionary containing the data for each variable stored within 
+		the CDF file.
+	meta : dict
+		Dictionary containing the metadata for each variable in the data
+		dictionary.
 	
 	'''
 

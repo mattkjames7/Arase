@@ -25,6 +25,7 @@ A module for downloading and reading Arase spacecraft data.
 | PWE        | ofa          | 2        | complex  | &#10013; | &#10006; | &#10006; |
 | PWE        | ofa          | 2        | matrix   | &#10013; | &#10006; | &#10006; |
 | PWE        | ofa          | 2        | spec     | &#10004; | &#10006; | &#10006; |
+| XEP        |              | 2        | omniflux | &#10004; | &#10004; | &#10004; |
 
 * &#10004; - Works
 * &#10006; - Not working yet. In the case of 3D data, a `SpecCls3D` object needs to be written. For MGF and level 3 hfa data, it's a simple case of plotting a line.

@@ -4,7 +4,31 @@ from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 
 def ReadOmni(Date):
+	'''
+	Reads the level 2 omniflux data product for a given date.
 	
+	Inputs
+	======
+	Date : int
+		Integer date in the format yyyymmdd
+	
+	Returns
+	=======
+	data : dict
+		Contains the following fields:
+		'Epoch' : CDF epoch
+		'Date' : Date
+		'ut' : UT (hours from beginning of the day)
+		'Energy' : Energy bins
+		'H+Flux' : SpecCls object, contains proton fluxes
+		'He+Flux' : SpecCls object, contains helium ion fluxes
+		'O+Flux' : SpecCls object, contains oxygen ion fluxes
+		
+	For more information about the SpecCls object, see Arase.Tools.SpecCls 
+		
+
+	'''		
+				
 				
 	#read the CDF file
 	data,meta = _ReadCDF(Date,2,'omniflux')		

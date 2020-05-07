@@ -5,8 +5,32 @@ from ..Tools.CDFEpochToUT import CDFEpochToUT
 
 def ReadEFD(Date):
 	'''
-	Reads the EFD part of PWE data.
-	'''
+	Reads the level 2 EFD part of PWE data.
+	
+	Inputs
+	======
+	Date : int
+		Integer date in the format yyyymmdd
+	
+	Returns
+	=======
+	data : dict
+		Contains the following fields:
+		'Epoch' : CDF epoch
+		'Date' : Date
+		'ut' : UT (hours from beginning of the day)
+		'F' : Frequency bins
+		'F100' : Frequency bins
+		'Spectra' : SpecCls object, contains Spectra
+		'SpectraEvEv' : SpecCls object, contains Spectra
+		'SpectraEuEu' : SpecCls object, contains Spectra
+		'SpectraEuEvRe' : SpecCls object, contains Spectra
+		'SpectraEuEvIm' : SpecCls object, contains Spectra
+		
+	For more information about the SpecCls object, see Arase.Tools.SpecCls 
+		
+
+	'''		
 
 	#List the fields to output
 	fields = {	'spectra' : 		('Spectra','Frequency, $f$ (Hz)',r'EFD spectrum, $E_v$ ((mV/m)$^2$/Hz)'),

@@ -6,10 +6,33 @@ from ..Tools.ReadCDF import ReadCDF
 
 def _ReadCDF(Date,L,prod):
 	'''
-	Reads the CDF file containing the position of Arase.
+	Reads the CDF file containing Arase LEPi data.
+
+	Inputs
+	======
+	Date : int
+		Integer date in the format yyyymmdd
+	L : int
+		Level of data to download
+	prod : str
+		Data product to download
+
+
+	Available data products
+	=======================
+	L		prod
+	2		'omniflux'
+	2		'3dflux'
 	
-	
-	
+	Returns
+	=======
+	data : dict
+		Dictionary containing the data for each variable stored within 
+		the CDF file.
+	meta : dict
+		Dictionary containing the metadata for each variable in the data
+		dictionary.
+		
 	'''
 	
 	idxfname = Globals.DataPath + 'LEPi/Index-L{:01d}-{:s}.dat'.format(L,prod)
