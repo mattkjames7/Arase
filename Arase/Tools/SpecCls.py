@@ -98,6 +98,14 @@ class SpecCls(object):
 		else:
 			self.bw = bw
 			
+		if None in self.bw:
+			nbw = np.size(self.bw)
+			for i in range(0,nbw):
+				if self.bw[i] is None:
+					df = Freq[i][1:] - Freq[i][:-1]
+					df = np.concatenate(([df[0]],df,[df[1]]))/2.0
+					self.bw[i] = (df[1:] + df[:-1])					
+			
 		self._CalculateTimeLimits() 
 		self._CalculateFrequencyLimits()
 		self._CalculateScale()
