@@ -27,6 +27,9 @@ def Read3D(Date):
 				
 	#read the CDF file
 	data,meta = _ReadCDF(Date,2,'3dflux')		
+
+	if data is None:
+		return None
 	
 	# #output dict
 	# out = {}

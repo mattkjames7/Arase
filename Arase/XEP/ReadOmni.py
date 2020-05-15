@@ -36,6 +36,9 @@ def ReadOmni(Date):
 	#output dict
 	out = {}
 	
+	if data is None:
+		return None
+	
 	#get the time 
 	out['Epoch'] = data['Epoch']
 	out['Date'],out['ut'] = CDFEpochToUT(out['Epoch'])

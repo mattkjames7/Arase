@@ -60,7 +60,7 @@ def _ReadCDF(Date,subcomp,L,prod):
 	use = np.where(idx.Date == Date)[0]
 	if use.size == 0:
 		print('Date not found, run Arase.Pos.DownloadData() to check for updates.')
-		return None
+		return None,None
 	idx = idx[use]
 	mx = np.where(idx.Version  == np.max(idx.Version))[0]
 	mx = mx[0]
@@ -74,7 +74,7 @@ def _ReadCDF(Date,subcomp,L,prod):
 	#check file exists
 	if not os.path.isfile(fname):
 		print('Index is broken: Update the data index')
-		return None
+		return None,None
 		
 	#read the file
 	return ReadCDF(fname)

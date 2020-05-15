@@ -35,6 +35,9 @@ def ReadMGF(Date):
 	#read the CDF file
 	data,meta = _ReadCDF(Date,2,'8sec')		
 
+	if data is None:
+		return None
+
 	#create output array
 	dtype = [	('Date','int32'),
 				('ut','float32'),

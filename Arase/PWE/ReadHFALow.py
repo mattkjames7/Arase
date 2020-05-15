@@ -50,6 +50,9 @@ def ReadHFALow(Date):
 				
 	#read the CDF file
 	data,meta = _ReadCDF(Date,'hfa',2,'low')		
+
+	if data is None:
+		return None
 	
 	#output dict
 	out = {}

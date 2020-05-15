@@ -28,6 +28,9 @@ def ReadUHDensity(Date):
 	#read the CDF file
 	data,meta = _ReadCDF(Date,'hfa',3,'')		
 
+	if data is None:
+		return None
+
 	#create output array
 	dtype = [	('Date','int32'),
 				('ut','float32'),

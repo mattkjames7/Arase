@@ -59,6 +59,9 @@ def ReadHFA(Date):
 	
 	#output dict
 	out = {}
+
+	if data is None and datal is None:
+		return None
 	
 	#get the time and the frequency arrays
 	if not datah is None:

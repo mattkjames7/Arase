@@ -43,6 +43,9 @@ def ReadOmni(Date):
 				
 	#read the CDF file
 	data,meta = _ReadCDF(Date,2,'omniflux')		
+
+	if data is None:
+		return None
 	
 	#output dict
 	out = {}

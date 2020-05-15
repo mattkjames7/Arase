@@ -52,6 +52,9 @@ def ReadHFAHigh(Date):
 	
 	#output dict
 	out = {}
+
+	if data is None:
+		return None
 	
 	#get the time 
 	out['Epoch'] = data['Epoch']

@@ -12,6 +12,9 @@ def ReadL3(Date):
 	#read the CDF file
 	data,meta = _ReadCDF(Date,'l3')
 
+	if data is None:
+		return None
+
 	#create an output array
 	dtype = [	('Date','int32'),					#Date in format yyyymmdd
 				('ut','float32'),					#Hours from beginning of the day
