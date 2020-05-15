@@ -216,10 +216,13 @@ class SpecCls(object):
 		
 		#look for gaps in ut
 		if len(f.shape) > 1:
-			isgap = ((utc[1:] - utc[:-1]) > 1.1*dt[:-1]) | ((f[1:,:] - f[:-1,:]) != 0).any(axis=1)
+			#isgap = ((utc[1:] - utc[:-1]) > 1.1*dt[:-1]) | ((f[1:,:] - f[:-1,:]) != 0).any(axis=1)
+			#minor fudge here
+			isgap = ((utc[1:] - utc[:-1]) > 10.0) | ((f[1:,:] - f[:-1,:]) != 0).any(axis=1)
 			nf = f.shape[1]
 		else:
-			isgap = (utc[1:] - utc[:-1]) > 1.1*dt[:-1]
+			#isgap = (utc[1:] - utc[:-1]) > 1.1*dt[:-1]
+			isgap = (utc[1:] - utc[:-1]) > 10.0
 			nf = f.size
 		gaps = np.where(isgap)[0] + 1
 		if gaps.size == 0:
