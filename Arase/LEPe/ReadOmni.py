@@ -3,7 +3,7 @@ from ._ReadCDF import _ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 
-def ReadOmni(Date):
+def ReadOmni(Date,KeV=False):
 	'''
 	Reads the level 2 omniflux data product for a given date.
 	
@@ -11,6 +11,8 @@ def ReadOmni(Date):
 	======
 	Date : int
 		Integer date in the format yyyymmdd
+	Kev : bool
+		Converts units to be KeV instead of eV
 	
 	Returns
 	=======
@@ -42,6 +44,8 @@ def ReadOmni(Date):
 	
 	#the energy arrays
 	out['Energy'] = data['FEDO_Energy']
+	if KeV:
+		out['Energy'] = out['Energy']/1000.0
 	emid = np.mean(out['Energy'],axis=1)
 	bw = out['Energy'][:,1,:] - out['Energy'][:,0,:]
 
@@ -50,10 +54,17 @@ def ReadOmni(Date):
 	s = data['FEDO']
 	bad = np.where(s < 0)
 	s[bad] = np.nan
+	if KeV:
+		s = s*1000.0
 	
-	#plot labels
-	ylabel = 'Energy (eV)'
-	zlabel = 'Omni-directional number flux (#/s-cm2-sr-eV)'
+		#plot labels
+		ylabel = 'Energy (KeV)'
+		zlabel = 'Omni-directional number flux (#/s-cm2-sr-KeV)'
+	else:
+		
+		#plot labels
+		ylabel = 'Energy (eV)'
+		zlabel = 'Omni-directional number flux (#/s-cm2-sr-eV)'
 	
 	
 	#now to store the spectra

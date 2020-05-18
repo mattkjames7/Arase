@@ -1,1 +1,1 @@
-from .ReadOMNI import ReadOMNI
+from .ReadOmni import ReadOmni
