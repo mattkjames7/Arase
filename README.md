@@ -31,3 +31,4 @@ A module for downloading and reading Arase spacecraft data.
 * &#10006; - Not working yet. In the case of 3D data, a `SpecCls3D` object needs to be written. For MGF and level 3 hfa data, it's a simple case of plotting a line.
 * &#10013; - Probably works, but have no access to the data to be able to test it.
 * &#10033; - Currently 3D spectra can only be read into dictionaries as a `SpecCls3D` object is needed.
+
