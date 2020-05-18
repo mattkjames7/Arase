@@ -75,6 +75,7 @@ def ReadHFALow(Date):
 			ScaleType = 'positive'
 		bad = np.where(spec == -999.9)
 		spec[bad] = np.nan
-		out[field] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['F'],spec,Meta=meta[k],dt=data['time_step']/3600.0,ylabel=ylabel,zlabel=zlabel,ScaleType=ScaleType)
+		out[field] = SpecCls(ylabel=ylabel,zlabel=zlabel,ScaleType=ScaleType)
+		out[field].AddData(out['Date'],out['ut'],out['Epoch'],out['F'],spec,Meta=meta[k],dt=data['time_step']/3600.0)
 		
 	return out	

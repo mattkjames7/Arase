@@ -57,6 +57,7 @@ def ReadOmni(Date):
 	
 	
 	#now to store the spectra
-	out['eFlux'] = SpecCls(out['Date'],out['ut'],out['Epoch'],emid,s,Meta=meta['FEDO'],bw=bw,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+	out['eFlux'] = SpecCls(ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+	out['eFlux'].AddData(out['Date'],out['ut'],out['Epoch'],emid,s,Meta=meta['FEDO'],bw=bw)
 		
 	return out	

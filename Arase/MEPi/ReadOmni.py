@@ -82,9 +82,11 @@ def ReadOmni(Date):
 		field,ylabel,zlabel = fields[k]
 		
 		#now to store the spectra
-		if '_tof' in k:
-			out[field] = SpecCls(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k],ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+		if not '_tof' in k:
+			out[field] = SpecCls(ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+			out[field].AddData(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k])
 		else:
-			out[field] = SpecCls(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k],ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+			out[field] = SpecCls(ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+			out[field].AddData(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k])
 			
 	return out	

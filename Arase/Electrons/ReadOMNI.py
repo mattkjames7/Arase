@@ -77,8 +77,8 @@ def ReadOMNI(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 			e = data['Epoch_L']
 			d,t = CDFEpochToUT(e)
 			energy = data['FEDO_L_Energy']
-			emid = np.mean(energy,axis=1)
-			bw = energy[:,1,:] - energy[:,0,:]
+			emid = np.mean(energy,axis=0)
+			bw = None
 			s = data['FEDO_L']
 			bad = np.where(s < 0)
 			s[bad] = np.nan
@@ -93,8 +93,8 @@ def ReadOMNI(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 			e = data['Epoch_H']
 			d,t = CDFEpochToUT(e)
 			energy = data['FEDO_H_Energy']
-			emid = np.mean(energy,axis=1)
-			bw = energy[:,1,:] - energy[:,0,:]
+			emid = np.mean(energy,axis=0)
+			bw = None
 			s = data['FEDO_H']
 			bad = np.where(s < 0)
 			s[bad] = np.nan
@@ -115,8 +115,8 @@ def ReadOMNI(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 			e = data['Epoch']
 			d,t = CDFEpochToUT(e)
 			energy = data['FEDO_SSD_Energy']
-			emid = np.mean(energy,axis=1)
-			bw = energy[:,1,:] - energy[:,0,:]
+			emid = np.mean(energy,axis=0)
+			bw = None
 			s = data['FEDO_SSD']
 			bad = np.where(s < 0)
 			s[bad] = np.nan
@@ -128,4 +128,4 @@ def ReadOMNI(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 			Spec.append(s)
 			BW.append(bw)
 			
-	return SpecCls(Dates,ut,Epoch,Energy,Spec,bw=BW,ylabel=ylabel,zlabel=zlabel,ylog=ylog,zlog=zlog,ScaleType='positive')
+	return SpecCls(Dates,ut,Epoch,Energy,Spec,bw=BW,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True,ScaleType='positive')
