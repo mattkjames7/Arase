@@ -96,7 +96,7 @@ class SpecCls(object):
 		#add to the total count of spectrograms stored
 		self.n += 1
 		
-	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None):
+	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,cmap='gnuplot'):
 		#create the plot
 		if fig is None:
 			fig = plt
@@ -132,7 +132,7 @@ class SpecCls(object):
 			
 		#create plots
 		for i in range(0,self.n):
-			tmp = self._PlotSpectrogram(ax,i,scale,norm)
+			tmp = self._PlotSpectrogram(ax,i,scale,norm,cmap)
 			if i == 0:
 				sm = tmp
 
@@ -147,13 +147,13 @@ class SpecCls(object):
 
 		#colorbar
 		divider = make_axes_locatable(ax)
-		cax = divider.append_axes("right", size="5%", pad=0.05)
+		cax = divider.append_axes("right", size="2.5%", pad=0.05)
 
 		cbar = fig.colorbar(sm,cax=cax) 
 		cbar.set_label(self.zlabel)		
 		return ax
 
-	def _PlotSpectrogram(self,ax,I,scale,norm):
+	def _PlotSpectrogram(self,ax,I,scale,norm,cmap):
 		'''
 		This will plot a single spectrogram (multiple may be stored in
 		this object at any one time
@@ -183,11 +183,11 @@ class SpecCls(object):
 		if len(f.shape) > 1:
 			#isgap = ((utc[1:] - utc[:-1]) > 1.1*dt[:-1]) | ((f[1:,:] - f[:-1,:]) != 0).any(axis=1)
 			#minor fudge here
-			isgap = ((utc[1:] - utc[:-1]) > 10.0) | ((f[1:,:] - f[:-1,:]) != 0).any(axis=1)
+			isgap = ((utc[1:] - utc[:-1]) > 60.0/3600.0) | ((f[1:,:] - f[:-1,:]) != 0).any(axis=1)
 			nf = f.shape[1]
 		else:
 			#isgap = (utc[1:] - utc[:-1]) > 1.1*dt[:-1]
-			isgap = (utc[1:] - utc[:-1]) > 10.0
+			isgap = (utc[1:] - utc[:-1]) > 60.0/3600.0
 			nf = f.size
 		gaps = np.where(isgap)[0] + 1
 		if gaps.size == 0:
@@ -201,8 +201,6 @@ class SpecCls(object):
 		ng = np.size(i0)
 
 		#loop through each continuous block of utc
-		
-		cmap = plt.cm.get_cmap('gnuplot')
 		for i in range(0,ng):
 			ttmp = np.append(t0[i0[i]:i1[i]-1],t1[i1[i]-1])
 			st = Spec[i0[i]:i1[i]]

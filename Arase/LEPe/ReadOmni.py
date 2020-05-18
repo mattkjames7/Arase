@@ -59,12 +59,12 @@ def ReadOmni(Date,KeV=False):
 	
 		#plot labels
 		ylabel = 'Energy (KeV)'
-		zlabel = 'Omni-directional number flux (#/s-cm2-sr-KeV)'
+		zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2}$-sr$^{-1}$ KeV$^{-1}$)'
 	else:
 		
 		#plot labels
 		ylabel = 'Energy (eV)'
-		zlabel = 'Omni-directional number flux (#/s-cm2-sr-eV)'
+		zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2$-sr$^{-1}$ eV$^{-1}$)'
 	
 	
 	#now to store the spectra

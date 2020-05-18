@@ -12,8 +12,6 @@ def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 	
 	'''
 
-	ylabel = 'Energy (keV)'
-	zlabel = 'Omni-directional Electron Flux (cm$^{-2}$ s$^{-1}$ sr$^{-1}$ keV$^{-1}$)'
 	
 	Data = []
 	
