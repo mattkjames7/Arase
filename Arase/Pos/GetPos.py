@@ -5,9 +5,6 @@ def GetPos():
 	'''
 	Reads the binary files containing positional information about RBSP.
 
-	Input:
-		sc: 'a' or 'b'
-		
 	Returns:
 		numpy.recarray
 	'''
