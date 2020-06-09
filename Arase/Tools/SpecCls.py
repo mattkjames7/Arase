@@ -135,6 +135,7 @@ class SpecCls(object):
 	def _GetSpectrum(self,I,sutc,dutc,Method,PSD):
 	
 		#get the appropriate data
+		l = self.Label[I]
 		utc = self.utc[I]
 		if PSD and self.SpecType != 'freq':
 			f = self.V[I]
@@ -149,7 +150,7 @@ class SpecCls(object):
 		
 		#check if the nearest is within dutc
 		if dt[near] > dutc:
-			return [],[]
+			return [],[],[]
 			
 		
 		#check if we are past the end of the time series, or Method is nearest
@@ -160,7 +161,6 @@ class SpecCls(object):
 			else:
 				e = f
 			
-			return s,e
 		else:
 			#in this case we need to find the two surrounding neighbours
 			#and interpolate between them
@@ -188,8 +188,19 @@ class SpecCls(object):
 			
 			s = s0 + dt*dsdx
 			e = e0 + dt*dedx
+		
+		
+		#remove rubbish
+		good = np.where(e > 0)[0]
+		e = e[good]
+		s = s[good]
 			
-			return s,e
+		#sort by e
+		srt = np.argsort(e)
+		e = e[srt]
+		s = s[srt]
+		return e,s,l
+
 	
 	def GetSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,PSD=False):
 		'''
@@ -221,13 +232,15 @@ class SpecCls(object):
 		#create the objects to store spectra and energy/frequency bins
 		spec = []
 		freq = []
+		labs = []
 		
 		#get the spectra for each element in  self.Spec
 		for i in range(0,self.n):
-			s,e = self._GetSpectrum(i,utc,dutc,Method,PSD)
+			e,s,l = self._GetSpectrum(i,utc,dutc,Method,PSD)
 			if len(s) > 0:
 				spec.append(s)
 				freq.append(e)
+				labs.append(l)
 			
 		#combine if necessary
 		if not Split:
@@ -237,7 +250,7 @@ class SpecCls(object):
 			spec = spec[srt]
 			freq = freq[srt]
 			
-		return freq,spec
+		return freq,spec,labs
 		
 	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
 		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False):
@@ -264,7 +277,7 @@ class SpecCls(object):
 		'''	
 		
 		#get the spectra
-		freq,spec = self.GetSpectrum(Date,ut,Method,Maxdt,Split,PSD)
+		freq,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,Split,PSD)
 		
 		
 		#create the figure
@@ -278,9 +291,14 @@ class SpecCls(object):
 			
 		#plot
 		if Split:
-			nc = len(color)
+			if not color is None:
+				nc = len(color)
 			for i in range(0,len(spec)):
-				ax.plot(freq,spec,color=color[i % nc])
+				if color is None:
+					ax.plot(freq[i],spec[i],label=labs[i])
+				else:
+					ax.plot(freq[i],spec[i],color=color[i % nc],label=labs[i])
+			ax.legend()
 		else:
 			ax.plot(freq,spec,color=color)
 

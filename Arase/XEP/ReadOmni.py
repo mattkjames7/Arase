@@ -69,8 +69,8 @@ def ReadOmni(Date):
 	
 	#now to store the spectra
 	out['eFluxSSD'] = SpecCls(SpecType='e',ylabel=ylabelS,zlabel=zlabelS,ylog=True,zlog=True,ScaleType='positive')
-	out['eFluxSSD'].AddData(out['Date'],out['ut'],out['Epoch'],essd,ssd,Meta=meta['FEDO_SSD'])
+	out['eFluxSSD'].AddData(out['Date'],out['ut'],out['Epoch'],essd,ssd,Meta=meta['FEDO_SSD'],Label='XEP')
 	out['eFluxGSO'] = SpecCls(SpecType='e',ylabel=ylabelG,zlabel=zlabelG,ylog=True,zlog=True,ScaleType='positive')
-	out['eFluxGSO'].AddData(out['Date'],out['ut'],out['Epoch'],egso,gso,Meta=meta['FEDO_GSO'])
+	out['eFluxGSO'].AddData(out['Date'],out['ut'],out['Epoch'],egso,gso,Meta=meta['FEDO_GSO'],Label='XEP')
 		
 	return out	
