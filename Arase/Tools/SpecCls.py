@@ -27,6 +27,29 @@ ParticleMass = { 	'e' : 9.10938356e-31,
 
 class SpecCls(object):
 	def __init__(self,SpecType='freq',**kwargs):
+		'''
+		An object for storing and plotting spectral data,
+		
+		See SpecCls.Plot, SpecCls.PlotSpectrum and SpecCls.GetSpectrum
+		for more information.
+		
+		Inputs
+		=====
+		SpecType : str
+			'freq'|'e'|'H'|'He'|'O'|'O2'
+		xlabel : str
+			Label for x-axis
+		ylabel : str
+			Label for y-axis
+		zlabel : str
+			Label for color scale
+		ylog : bool
+			True for logarithmic y-axis
+		zlog : bool
+			True for logarithmic color scale
+		
+		'''
+		
 		#create lists to store the input variables
 		self.Date = []
 		self.ut = []
@@ -96,8 +119,33 @@ class SpecCls(object):
 		
 					
 	
-	def AddData(self,Date,ut,Epoch,Freq,Spec,bw=None,dt=None,Meta=None,
-			Label=''):
+	def AddData(self,Date,ut,Epoch,Freq,Spec,bw=None,dt=None,Meta=None,Label=''):
+		'''
+		Adds data to the object
+		
+		Inputs
+		======
+		Date : int
+			Array of dates in format yyyymmdd
+		ut : float
+			Array of times since beginning of the day
+		Epoch : float
+			CDF epoch 
+		Freq : float
+			Either an array of frequencies or energies depending upon the
+			type of spectrum
+		Spec : float
+			2D array containing the spectral data, shape (nt,nf) where
+			nt is ut.size and nf is Freq.size
+		bw : None or float
+			Width of the energy/frequency bins
+		dt : None or float
+			duration of each spectrum
+		Meta : dict
+			Meta data from CDF - not used
+		Label : str
+			String containing a plot label if desired
+		'''
 
 		#store the input variables by appending to the existing lists
 		self.Date.append(Date)
@@ -222,6 +270,18 @@ class SpecCls(object):
 		Split : bool
 			If True, the spectra will be returned as a list, if False,
 			they will be combined to form a single spectrum.
+		PSD : bool
+			If True and this is not a frequency spectrum, then phase
+			space density will be returned
+		
+		Returns
+		=======
+		freq : float/list
+			Array(s) of frequencies or energies
+		spec : float/list
+			Array(s) containing specral data
+		labs : list
+			List of plot labels
 		
 		'''
 	
@@ -273,7 +333,21 @@ class SpecCls(object):
 		Split : bool
 			If True, the spectra will be returned as a list, if False,
 			they will be combined to form a single spectrum.
+		PSD : bool
+			If True and this is not a frequency spectrum, then phase
+			space density will be plotted
+		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
+			If None - a new plot is created
+			If an instance of pyplot then a new Axes is created on an existing plot
+			If Axes instance, then plotting is done on existing Axes
+		maps : list
+			[xmaps,ymaps,xmap,ymap] controls position of subplot
+		xlog : bool
+			if True, x-axis is logarithmic
+		ylog : bool
+			If True, y-axis is logarithmic
 		
+				
 		'''	
 		
 		#get the spectra
@@ -326,7 +400,36 @@ class SpecCls(object):
 		return ax
 				
 		
-	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,cmap='gnuplot',PSD=False):
+	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,
+			cmap='gnuplot',PSD=False):
+		'''
+		Plots the spectrogram
+		
+		Inputs
+		======
+		PSD : bool
+			If True and this is not a frequency spectrum, then phase
+			space density will be plotted
+		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
+			If None - a new plot is created
+			If an instance of pyplot then a new Axes is created on an existing plot
+			If Axes instance, then plotting is done on existing Axes
+		maps : list
+			[xmaps,ymaps,xmap,ymap] controls position of subplot
+		xlog : bool
+			if True, color scale is logarithmic
+		ylog : bool
+			If True, y-axis is logarithmic
+		cmap : str
+			String containing the name of the colomap to use
+		scale : list
+			2-element list or tuple containing the minimum and maximum
+			extents of the color scale
+		
+		'''
+		
+		
+		
 		#create the plot
 		if fig is None:
 			fig = plt
