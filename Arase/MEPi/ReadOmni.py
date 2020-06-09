@@ -61,32 +61,32 @@ def ReadOmni(Date):
 	
 
 	#replace bad data
-	fields = {	'FPDO' : 		('H+Flux','Energy (keV/q)','Omni-directional H$^+$ flux (#/s-cm2-sr-keV/q)'),
-				'FHE2DO' : 		('He++Flux','Energy (keV/q)','Omni-directional He$^{++}$ flux (#/s-cm2-sr-keV/q)'),
-				'FHEDO' : 		('He+Flux','Energy (keV/q)','Omni-directional He$^+$ flux (#/s-cm2-sr-keV/q)'),
-				'FOPPDO' : 		('O++Flux','Energy (keV/q)','Omni-directional O$^{++}$ flux (#/s-cm2-sr-keV/q)'),
-				'FODO' : 		('O+Flux','Energy (keV/q)','Omni-directional O$^+$ flux (#/s-cm2-sr-keV/q)'),
-				'FO2PDO' : 		('O2+Flux','Energy (keV/q)','Omni-directional O$_2^+$ flux (#/s-cm2-sr-keV/q)'),
-				'FPDO_tof' : 	('H+FluxTOF','Energy (keV/q)','Omni-directional H$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
-				'FHE2DO_tof' : 	('He++FluxTOF','Energy (keV/q)','Omni-directional He$^{++}$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
-				'FHEDO_tof' : 	('He+FluxTOF','Energy (keV/q)','Omni-directional He$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
-				'FOPPDO_tof' : 	('O++FluxTOF','Energy (keV/q)','Omni-directional O$^{++}$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
-				'FODO_tof' : 	('O+FluxTOF','Energy (keV/q)','Omni-directional O$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)'),
-				'FO2PDO_tof' : 	('O2+FluxTOF','Energy (keV/q)','Omni-directional O$_2^+$ Flux for TOF data (#/s-cm2-sr-keV/q)') }
+	fields = {	'FPDO' : 		('H+Flux','Energy (keV/q)','Omni-directional H$^+$ flux (#/s-cm2-sr-keV/q)','H'),
+				'FHE2DO' : 		('He++Flux','Energy (keV/q)','Omni-directional He$^{++}$ flux (#/s-cm2-sr-keV/q)','He'),
+				'FHEDO' : 		('He+Flux','Energy (keV/q)','Omni-directional He$^+$ flux (#/s-cm2-sr-keV/q)','He'),
+				'FOPPDO' : 		('O++Flux','Energy (keV/q)','Omni-directional O$^{++}$ flux (#/s-cm2-sr-keV/q)','O'),
+				'FODO' : 		('O+Flux','Energy (keV/q)','Omni-directional O$^+$ flux (#/s-cm2-sr-keV/q)','O'),
+				'FO2PDO' : 		('O2+Flux','Energy (keV/q)','Omni-directional O$_2^+$ flux (#/s-cm2-sr-keV/q)','O2'),
+				'FPDO_tof' : 	('H+FluxTOF','Energy (keV/q)','Omni-directional H$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)','H'),
+				'FHE2DO_tof' : 	('He++FluxTOF','Energy (keV/q)','Omni-directional He$^{++}$ Flux for TOF data (#/s-cm2-sr-keV/q)','He'),
+				'FHEDO_tof' : 	('He+FluxTOF','Energy (keV/q)','Omni-directional He$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)','He'),
+				'FOPPDO_tof' : 	('O++FluxTOF','Energy (keV/q)','Omni-directional O$^{++}$ Flux for TOF data (#/s-cm2-sr-keV/q)','O'),
+				'FODO_tof' : 	('O+FluxTOF','Energy (keV/q)','Omni-directional O$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)','O'),
+				'FO2PDO_tof' : 	('O2+FluxTOF','Energy (keV/q)','Omni-directional O$_2^+$ Flux for TOF data (#/s-cm2-sr-keV/q)','O2') }
 	
 	for k in list(fields.keys()):
 		s = data[k]
 		bad = np.where(s < 0)
 		s[bad] = np.nan
 		
-		field,ylabel,zlabel = fields[k]
+		field,ylabel,zlabel,spectype = fields[k]
 		
 		#now to store the spectra
 		if not '_tof' in k:
-			out[field] = SpecCls(ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+			out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 			out[field].AddData(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k])
 		else:
-			out[field] = SpecCls(ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+			out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 			out[field].AddData(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k])
 			
 	return out	

@@ -3,7 +3,7 @@ from ._ReadCDF import _ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 
-def ReadOmni(Date,KeV=False):
+def ReadOmni(Date,KeV=True):
 	'''
 	Reads the level 2 omniflux data product for a given date.
 	
@@ -68,7 +68,7 @@ def ReadOmni(Date,KeV=False):
 	
 	
 	#now to store the spectra
-	out['eFlux'] = SpecCls(ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+	out['eFlux'] = SpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 	out['eFlux'].AddData(out['Date'],out['ut'],out['Epoch'],emid,s,Meta=meta['FEDO'],bw=bw)
 		
 	return out	

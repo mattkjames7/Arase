@@ -46,9 +46,9 @@ def ReadOmni(Date):
 
 
 	#replace bad data
-	fields = {	'FPDO' : 	('H+','Energy (keV)',r'Omni H$^+$ flux (1/keV-sr-s-cm$^2$)'),
-				'FHEDO' : 	('He+','Energy (keV)',r'Omni He$^+$ flux (1/keV-sr-s-cm$^2$)'),
-				'FODO' : 	('O+','Energy (keV)',r'Omni O$^+$ flux (1/keV-sr-s-cm$^2$)'),}
+	fields = {	'FPDO' : 	('H+','Energy (keV)',r'Omni H$^+$ flux (1/keV-sr-s-cm$^2$)','H'),
+				'FHEDO' : 	('He+','Energy (keV)',r'Omni He$^+$ flux (1/keV-sr-s-cm$^2$)','He'),
+				'FODO' : 	('O+','Energy (keV)',r'Omni O$^+$ flux (1/keV-sr-s-cm$^2$)','O'),}
 	
 	for k in list(fields.keys()):
 		s = data[k]
@@ -56,7 +56,7 @@ def ReadOmni(Date):
 		s[bad] = np.nan
 		
 		#get the base field name
-		kout,ylabel,zlabel = fields[k]
+		kout,ylabel,zlabel,spectype = fields[k]
 		
 		#output spectra fields name
 		kspec = kout + 'Flux'
@@ -69,7 +69,7 @@ def ReadOmni(Date):
 		out[ke] = data[ke_cdf]
 		
 		#now to store the spectra
-		out[kspec] = SpecCls(ylabel=ylabel,zlabel=zlabel,ScaleType='positive',ylog=True,zlog=True)
+		out[kspec] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ScaleType='positive',ylog=True,zlog=True)
 		out[kspec].AddData(out['Date'],out['ut'],out['Epoch'],out[ke],s,Meta=meta[k])
 		
 

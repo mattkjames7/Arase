@@ -4,6 +4,7 @@ import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from .ContUT import ContUT
 from .DTPlotLabel import DTPlotLabel
+from scipy.interpolate import interp1d
 
 defargs = {	'Meta' : None,
 			'dt' : None,
@@ -16,9 +17,16 @@ defargs = {	'Meta' : None,
 			'ScaleType' : 'range',
 			'nStd' : 2}
 
+amu = 1.6605e-27
+
+ParticleMass = { 	'e' : 9.10938356e-31,
+					'H' : 1.6726219e-27,
+					'He' : 4.002602*amu,
+					'O' : 15.999*amu,
+					'O2' : 15.999*amu*2}
 
 class SpecCls(object):
-	def __init__(self,**kwargs):
+	def __init__(self,SpecType='freq',**kwargs):
 		#create lists to store the input variables
 		self.Date = []
 		self.ut = []
@@ -29,7 +37,13 @@ class SpecCls(object):
 		self.bw = []
 		self.dt = []
 		self.Meta = []
+		self.Label = []
+		self.V = []
+		self.Vbw = []
+		self.PSD = []
+		self.Mass = ParticleMass.get(SpecType,0.0)
 		self.n = 0
+		self.SpecType = SpecType
 		
 		#and the keywords
 		self.xlabel = kwargs.get('xlabel',defargs['xlabel'])
@@ -67,9 +81,23 @@ class SpecCls(object):
 		#convert it to an array the same length as ut
 		dt = np.zeros(ut.size,dtype='float32') + dt
 		return dt
+		
+	def _CalculatePSD(self,Spec,Energy,dE):
+		e = 1.6022e-19
+		V = np.sqrt(np.float64(2*e*2000.0*Energy)/self.Mass)
+		V0 = np.sqrt(np.float64(2*e*2000.0*(Energy-dE/2.0)/self.Mass))
+		V1 = np.sqrt(np.float64(2*e*2000.0*(Energy+dE/2.0)/self.Mass))
+		self.V.append(V)
+		self.Vbw.append(V1-V0)
+		
+		psd =  np.float64(Spec)*(np.float64(self.Mass)/(V**2)) * np.float64(10.0/e)
+		self.PSD.append(psd)
+		
+		
 					
 	
-	def AddData(self,Date,ut,Epoch,Freq,Spec,bw=None,dt=None,Meta=None):
+	def AddData(self,Date,ut,Epoch,Freq,Spec,bw=None,dt=None,Meta=None,
+			Label=''):
 
 		#store the input variables by appending to the existing lists
 		self.Date.append(Date)
@@ -78,9 +106,14 @@ class SpecCls(object):
 		self.Freq.append(Freq)
 		self.Spec.append(Spec)		
 		self.Meta.append(Meta)
+		self.Label.append(Label)
+
 	
 		#get the bandwidth in the appropriate format
 		self.bw.append(self._ProcessBW(bw,Freq))
+
+		if self.SpecType != 'freq':
+			self._CalculatePSD(Spec,Freq,self.bw[-1])
 		
 		#calculate continuous time axis
 		self.utc.append(ContUT(Date,ut))
@@ -92,11 +125,190 @@ class SpecCls(object):
 		self._CalculateTimeLimits() 
 		self._CalculateFrequencyLimits()
 		self._CalculateScale()
+		if self.SpecType != 'freq':
+			self._CalculateVLimits()
+			self._CalculatePSDScale()
 		
 		#add to the total count of spectrograms stored
 		self.n += 1
+	
+	def _GetSpectrum(self,I,sutc,dutc,Method,PSD):
+	
+		#get the appropriate data
+		utc = self.utc[I]
+		if PSD and self.SpecType != 'freq':
+			f = self.V[I]
+			Spec = self.PSD[I]		
+		else:
+			f = self.Freq[I]
+			Spec = self.Spec[I]		
 		
-	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,cmap='gnuplot'):
+		#find the nearest
+		dt = np.abs(utc - sutc)
+		near = np.where(dt == dt.min())[0][0]
+		
+		#check if the nearest is within dutc
+		if dt[near] > dutc:
+			return [],[]
+			
+		
+		#check if we are past the end of the time series, or Method is nearest
+		if (Method == 'nearest') or (sutc < utc[0]) or (sutc > utc[-1]):
+			s = Spec[near,:]
+			if len(f.shape) == 2:
+				e = f[near,:]
+			else:
+				e = f
+			
+			return s,e
+		else:
+			#in this case we need to find the two surrounding neighbours
+			#and interpolate between them
+			bef = np.where(utc <= sutc)[0][-1]
+			aft = np.where(utc > sutc)[0][0]
+			
+			s0 = Spec[bef,:]
+			s1 = Spec[aft,:]
+			
+			if len(f.shape) == 2:
+				e0 = f[near,:]
+				e1 = f[near,:]
+			else:
+				e0 = f
+				e1 = f
+			
+			dx = utc[aft] - utc[bef]
+			ds = s1 - s0
+			de = e1 - e0
+			
+			dsdx = ds/dx
+			dedx = de/dx
+			
+			dt = sutc - utc[bef]
+			
+			s = s0 + dt*dsdx
+			e = e0 + dt*dedx
+			
+			return s,e
+	
+	def GetSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,PSD=False):
+		'''
+		This method will return a spectrum from a given time.
+		
+		Inputs
+		======
+		Date : int
+			Date in format yyyymmdd
+		ut : float
+			Time in hours since beginning of the day
+		Method : str
+			'nearest'|'interpolate' - will find the nearest spectrum to
+			the time specified time, or will interpolate between two 
+			surrounding spectra.
+		Maxdt : float
+			Maximum difference in time between the specified time and the
+			time of the spectra in seconds.
+		Split : bool
+			If True, the spectra will be returned as a list, if False,
+			they will be combined to form a single spectrum.
+		
+		'''
+	
+		#convert to continuous time
+		utc = ContUT(np.array([Date]),np.array([ut]))[0]
+		dutc = Maxdt/3600.0
+		
+		#create the objects to store spectra and energy/frequency bins
+		spec = []
+		freq = []
+		
+		#get the spectra for each element in  self.Spec
+		for i in range(0,self.n):
+			s,e = self._GetSpectrum(i,utc,dutc,Method,PSD)
+			if len(s) > 0:
+				spec.append(s)
+				freq.append(e)
+			
+		#combine if necessary
+		if not Split:
+			spec = np.concatenate(spec)
+			freq = np.concatenate(freq)
+			srt = np.argsort(freq)
+			spec = spec[srt]
+			freq = freq[srt]
+			
+		return freq,spec
+		
+	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
+		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False):
+		'''
+		This method will plot a spectrum from a given time.
+		
+		Inputs
+		======
+		Date : int
+			Date in format yyyymmdd
+		ut : float
+			Time in hours since beginning of the day
+		Method : str
+			'nearest'|'interpolate' - will find the nearest spectrum to
+			the time specified time, or will interpolate between two 
+			surrounding spectra.
+		Maxdt : float
+			Maximum difference in time between the specified time and the
+			time of the spectra in seconds.
+		Split : bool
+			If True, the spectra will be returned as a list, if False,
+			they will be combined to form a single spectrum.
+		
+		'''	
+		
+		#get the spectra
+		freq,spec = self.GetSpectrum(Date,ut,Method,Maxdt,Split,PSD)
+		
+		
+		#create the figure
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+		else:
+			ax = fig	
+			
+		#plot
+		if Split:
+			nc = len(color)
+			for i in range(0,len(spec)):
+				ax.plot(freq,spec,color=color[i % nc])
+		else:
+			ax.plot(freq,spec,color=color)
+
+		#set the x-axis scale
+		if xlog is None:
+			xlog = self._ylog
+		if xlog:
+			ax.set_xscale('log')
+		
+		#set the y-axis scale
+		if ylog is None:
+			ylog = self._zlog
+		if ylog:
+			ax.set_yscale('log')
+			
+		#set the axis labels
+		if PSD:
+			ax.set_xlabel('V (m s$^{-1}$)')
+			ax.set_ylabel('PSD (s$^3$ m$^{-6}$)')
+		else:
+			ax.set_xlabel(self.ylabel)
+			ax.set_ylabel(self.zlabel)
+
+			
+		return ax
+				
+		
+	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,cmap='gnuplot',PSD=False):
 		#create the plot
 		if fig is None:
 			fig = plt
@@ -107,24 +319,41 @@ class SpecCls(object):
 		ax.set_xlim(self._utlim)
 		if ylog is None:
 			ylog = self._ylog
-		if ylog:
-			ax.set_yscale('log')
-			ax.set_ylim(self._logflim)
+		if PSD and not self.SpecType == 'freq':
+			if ylog:
+				ax.set_yscale('log')
+				ax.set_ylim(self._logvlim)
+			else:
+				ax.set_ylim(self._vlim)
 		else:
-			ax.set_ylim(self._flim)
+			if ylog:
+				ax.set_yscale('log')
+				ax.set_ylim(self._logflim)
+			else:
+				ax.set_ylim(self._flim)
 			
 		#and labels
 		ax.set_xlabel(self.xlabel)
-		ax.set_ylabel(self.ylabel)
+		if PSD and self.SpecType != 'freq':
+			ax.set_ylabel('V (m s$^{-1}$)')
+		else:
+			ax.set_ylabel(self.ylabel)
 			
 		#get color scale
 		if zlog is None:
 			zlog = self._zlog
-		if scale is None:
-			if zlog:
-				scale = self._logscale
-			else:
-				scale = self._scale
+		if PSD and not self.SpecType == 'freq':
+			if scale is None:
+				if zlog:
+					scale = self._psdlogscale
+				else:
+					scale = self._psdscale
+		else:
+			if scale is None:
+				if zlog:
+					scale = self._logscale
+				else:
+					scale = self._scale
 		if zlog:
 			norm = colors.LogNorm()
 		else:
@@ -132,7 +361,7 @@ class SpecCls(object):
 			
 		#create plots
 		for i in range(0,self.n):
-			tmp = self._PlotSpectrogram(ax,i,scale,norm,cmap)
+			tmp = self._PlotSpectrogram(ax,i,scale,norm,cmap,PSD)
 			if i == 0:
 				sm = tmp
 
@@ -150,10 +379,13 @@ class SpecCls(object):
 		cax = divider.append_axes("right", size="2.5%", pad=0.05)
 
 		cbar = fig.colorbar(sm,cax=cax) 
-		cbar.set_label(self.zlabel)		
+		if PSD and self.SpecType != 'freq':
+			cbar.set_label('PSD (s$^3$ m$^{-6}$)')		
+		else:
+			cbar.set_label(self.zlabel)		
 		return ax
 
-	def _PlotSpectrogram(self,ax,I,scale,norm,cmap):
+	def _PlotSpectrogram(self,ax,I,scale,norm,cmap,PSD):
 		'''
 		This will plot a single spectrogram (multiple may be stored in
 		this object at any one time
@@ -164,9 +396,16 @@ class SpecCls(object):
 		utc = self.utc[I]
 		ut = self.ut[I]
 		dt = self.dt[I]
-		f = self.Freq[I]
 		bw = self.bw[I]
-		Spec = self.Spec[I]		
+		
+		if PSD and self.SpecType != 'freq':
+			bw = self.Vbw[I]
+			f = self.V[I]
+			Spec = self.PSD[I]		
+		else:
+			bw = self.bw[I]
+			f = self.Freq[I]
+			Spec = self.Spec[I]	
 		
 		#get the frequency band limits
 		bad = np.where(np.isnan(f))
@@ -275,6 +514,47 @@ class SpecCls(object):
 
 		self._flim = flim
 		self._logflim = 10**np.array(logflim)
+
+
+	def _CalculateVLimits(self):
+		'''
+		Loop through all of the stored spectra and work out the frequency
+		range to plot.
+		
+		'''
+		#initialize frequency limits
+		vlim = [0.0,-np.inf]
+		logvlim = [np.inf,-np.inf]
+		
+
+		#loop through each array
+		n = len(self.V)
+		for i in range(0,n):
+			f0 = self.V[i] - self.Vbw[i]/2.0
+			f1 = self.V[i] + self.Vbw[i]/2.0
+			mn = np.nanmin(f0)
+			mx = np.nanmax(f1)
+			if mn < vlim[0]:
+				vlim[0] = mn
+			if mx > vlim[1]:
+				vlim[1] = mx
+			lf0 = np.log10(f0)
+			lf1 = np.log10(f1)
+			bad = np.where(self.V[i] <= 0.0)
+			lf0[bad] = np.nan
+			lf1[bad] = np.nan
+
+			lmn = np.nanmin(lf0)
+			lmx = np.nanmax(lf1)
+			if lmn < logvlim[0]:
+				logvlim[0] = lmn
+			if lmx > logvlim[1]:
+				logvlim[1] = lmx
+
+		self._vlim = vlim
+		self._logvlim = 10**np.array(logvlim)
+
+
 		
 	def _CalculateScale(self):
 		'''
@@ -326,3 +606,54 @@ class SpecCls(object):
 		
 		self._scale = scale
 		self._logscale = logscale
+	
+	def _CalculatePSDScale(self):
+		'''
+		Calculate the default scale limits for the plot.
+		
+		'''
+		scale = [np.inf,-np.inf]
+		logscale = [np.inf,-np.inf]
+		
+		n = len(self.PSD)
+		for i in range(0,n):
+			ls = np.log10(self.PSD[i])
+			bad = np.where(self.PSD[i] <= 0)
+			ls[bad] = np.nan
+				
+			if self._ScaleType == 'std':
+				mu = np.nanmean(self.PSD[i])
+				std = np.std(self.PSD[i])
+				
+				lmu = np.nanmean(ls)
+				lstd = np.std(ls)
+					
+				tmpscale = [mu - self._nStd*std, mu + self._nStd*std]
+				tmplogscale = 10**np.array([lmu - self._nStd*lstd, lmu + self._nStd*lstd])					
+				
+			elif self._ScaleType == 'positive':
+				#calculate the scale based on all values being positive 
+				std = np.sqrt((1.0/np.sum(self.Spec[i].size))*np.nansum((self.PSD[i])**2))
+				lstd = np.sqrt(((1.0/np.sum(np.isfinite(ls))))*np.nansum((ls)**2))
+					
+				tmpscale = [0.0,std*self._nStd]
+				tmplogscale = 10**np.array([np.nanmin(ls),lstd*self._nStd])			
+			else:
+				#absolute range
+				tmpscale = [np.nanmin(self.PSD[i]),np.nanmax(self.PSD[i])]
+				tmplogscale = 10**np.array([np.nanmin(ls),np.nanmax(ls)])
+
+
+			if tmpscale[0] < scale[0]:
+				scale[0] = tmpscale[0]
+			if tmpscale[1] > scale[1]:
+				scale[1] = tmpscale[1]
+			
+			if tmplogscale[0] < logscale[0]:
+				logscale[0] = tmplogscale[0]
+			if tmplogscale[1] > logscale[1]:
+				logscale[1] = tmplogscale[1]
+	
+		
+		self._psdscale = scale
+		self._psdlogscale = logscale

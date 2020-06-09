@@ -67,7 +67,7 @@ def ReadEFD(Date):
 			bw = data['band_width']
 		else:
 			bw = np.ones(f.size,dtype='float32')
-		out[field] = SpecCls(ylabel=ylabel,zlabel=zlabel,ScaleType='positive')
+		out[field] = SpecCls(SpecType='freq',ylabel=ylabel,zlabel=zlabel,ScaleType='positive')
 		out[field].AddData(out['Date'],out['ut'],out['Epoch'],f,spec,Meta=meta[k],dt=1.0,bw=bw)
 		
 	return out	
