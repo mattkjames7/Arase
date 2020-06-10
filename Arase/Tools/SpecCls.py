@@ -322,7 +322,7 @@ class SpecCls(object):
 		
 	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
 		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False,
-		FitKappa=True,FitMaxwellian=False):
+		FitKappa=False,FitMaxwellian=False):
 		'''
 		This method will plot a spectrum from a given time.
 		
