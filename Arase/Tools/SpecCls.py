@@ -5,6 +5,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from .ContUT import ContUT
 from .DTPlotLabel import DTPlotLabel
 from scipy.interpolate import interp1d
+from .PSDtoCounts import PSDtoCounts
+from .PSDtoFlux import PSDtoFlux
+from .CountstoFlux import CountstoFlux
+from .CountstoPSD import CountstoPSD
+from .FitMaxwellianDist import FitMaxwellianDistCts,FitMaxwellianDist
+from .FitKappaDist import FitKappaDistCts,FitKappaDist
+from .KappaDist import KappaDist
+from .MaxwellBoltzmannDist import MaxwellBoltzmannDist
 
 defargs = {	'Meta' : None,
 			'dt' : None,
@@ -107,9 +115,9 @@ class SpecCls(object):
 		
 	def _CalculatePSD(self,Spec,Energy,dE):
 		e = 1.6022e-19
-		V = np.sqrt(np.float64(2*e*2000.0*Energy)/self.Mass)
-		V0 = np.sqrt(np.float64(2*e*2000.0*(Energy-dE/2.0)/self.Mass))
-		V1 = np.sqrt(np.float64(2*e*2000.0*(Energy+dE/2.0)/self.Mass))
+		V = np.sqrt(np.float64(e*2000.0*Energy)/self.Mass)
+		V0 = np.sqrt(np.float64(e*2000.0*(Energy-dE/2.0)/self.Mass))
+		V1 = np.sqrt(np.float64(e*2000.0*(Energy+dE/2.0)/self.Mass))
 		self.V.append(V)
 		self.Vbw.append(V1-V0)
 		
@@ -313,7 +321,8 @@ class SpecCls(object):
 		return freq,spec,labs
 		
 	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
-		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False):
+		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False,
+		FitKappa=True,FitMaxwellian=False):
 		'''
 		This method will plot a spectrum from a given time.
 		
@@ -346,6 +355,14 @@ class SpecCls(object):
 			if True, x-axis is logarithmic
 		ylog : bool
 			If True, y-axis is logarithmic
+		FitMaxwellian : bool or str
+			If True - the PSD will be used to fit a Maxwellian 
+			distribution, if 'counts' then the counts will be used 
+			instead.
+		FitKappa : bool or str
+			If True - the PSD will be used to fit a Kappa
+			distribution, if 'counts' then the counts will be used 
+			instead.			
 		
 				
 		'''	
@@ -372,7 +389,7 @@ class SpecCls(object):
 					ax.plot(freq[i],spec[i],label=labs[i])
 				else:
 					ax.plot(freq[i],spec[i],color=color[i % nc],label=labs[i])
-			ax.legend()
+			
 		else:
 			ax.plot(freq,spec,color=color)
 
@@ -396,6 +413,45 @@ class SpecCls(object):
 			ax.set_xlabel(self.ylabel)
 			ax.set_ylabel(self.zlabel)
 
+
+		if (not FitKappa is False) or (not FitMaxwellian is False):
+			ylim = ax.get_ylim()
+			ax.set_ylim(ylim)
+			
+			
+			#get the combined spectra
+			v,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,False,True)
+			e = 1.6022e-19
+			E = 0.5*self.Mass*(v**2)/(e*1000)
+			
+			#convert to counts
+			C = PSDtoCounts(v,spec,self.Mass)
+
+			#fit spectrum
+			if (not FitKappa is False):
+				if FitKappa is 'counts':
+					nk,Tk,K,statk = FitKappaDistCts(v,C,1.0e5,1.0e6,self.Mass,Verbose=True)
+				else:
+					nk,Tk,K,statk = FitKappaDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
+				fk = KappaDist(nk,v,Tk,self.Mass,K)
+				if not PSD:
+					fk = PSDtoFlux(v,fk,self.Mass)
+					ax.plot(E,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
+				else:
+					ax.plot(v,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
+			if (not FitMaxwellian is False):
+				if FitMaxwellian is 'counts':
+					nm,Tm,statm = FitMaxwellianDistCts(v,C,1.0e5,1.0e6,self.Mass)
+				else:
+					nm,Tm,statm = FitMaxwellianDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
+				fm = MaxwellBoltzmannDist(nm,v,Tm,self.Mass)
+				if not PSD:
+					fm = PSDtoFlux(v,fm,self.Mass)
+					ax.plot(E,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
+				else:
+					ax.plot(v,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
+
+		ax.legend(fontsize=8)
 			
 		return ax
 				

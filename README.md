@@ -151,6 +151,36 @@ where `E`, `H`, `He` and `O` are all instances of `SpecCls`.
 
 ![alt text](Electrons.png)
 
+### Single Spectra
+
+The `SpecCls` object has the ability to return single spectra, e.g.:
+
+```python
+import Arase
+import matplotlib.pyplot as plt
+
+#read in the electrons - this should work with and SpecCls object
+spec = Arase.Electrons.ReadOmni(Date)
+
+#for the energy bins and particle flux data
+e,dJdE,_ = spec.GetSpectrum(Date,ut)
+
+#for velocity and phase space density
+v,f,_ = spec.GetSpectrum(Date,ut,PSD=True)
+
+#or to plot
+plt.figure(figsize=(8,4))
+ax0 = spec.PlotSpectrum(Date,ut,PSD=False,Split=True,fig=plt,maps=[2,1,0,0])
+ax1 = spec.PlotSpectrum(Date,ut,PSD=True,Split=True,fig=plt,maps=[2,1,1,0])
+plt.tight_layout()
+
+#for more information, read the docstrings:
+spec.GetSpectrum?
+spec.PlotSpectrum?
+```
+
+![](Spectrum.png)
+
 ## Current progress
 
 
