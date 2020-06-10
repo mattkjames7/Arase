@@ -30,6 +30,7 @@ setuptools.setup(
 		'DateTimeTools',
 		'cdflib'
 	],
+	include_package_data=True,
 )
 
 
