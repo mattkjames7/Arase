@@ -84,9 +84,9 @@ def ReadOmni(Date):
 		#now to store the spectra
 		if not '_tof' in k:
 			out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
-			out[field].AddData(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k])
+			out[field].AddData(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k],Label='MEPi')
 		else:
 			out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
-			out[field].AddData(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k])
+			out[field].AddData(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k],Label='MEPi')
 			
 	return out	

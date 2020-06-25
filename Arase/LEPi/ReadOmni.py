@@ -70,7 +70,7 @@ def ReadOmni(Date):
 		
 		#now to store the spectra
 		out[kspec] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ScaleType='positive',ylog=True,zlog=True)
-		out[kspec].AddData(out['Date'],out['ut'],out['Epoch'],out[ke],s,Meta=meta[k])
+		out[kspec].AddData(out['Date'],out['ut'],out['Epoch'],out[ke],s,Meta=meta[k],Label='LEPi')
 		
 
 	return out	
