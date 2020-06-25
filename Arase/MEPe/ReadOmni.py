@@ -1,6 +1,6 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
-from ..Tools.SpecCls import SpecCls
+from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
@@ -76,7 +76,7 @@ def ReadOmni(Date):
 		
 		#now to store the spectra
 		if out['eFlux'] is None:
-			out['eFlux'] = SpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+			out['eFlux'] = PSpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 		out['eFlux'].AddData(sDate,sut,sEpoch,sEnergy,s,Meta=meta['FEDO'],Label='MEPe')
 			
 			

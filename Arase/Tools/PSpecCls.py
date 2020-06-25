@@ -74,6 +74,7 @@ class PSpecCls(object):
 		self.PSD = []
 		self.Mass = ParticleMass.get(SpecType,9.10938356e-31)
 		self.n = 0
+		self.SpecType = SpecType
 		
 		#and the keywords
 		self.xlabel = kwargs.get('xlabel',defargs['xlabel'])
@@ -585,7 +586,7 @@ class PSpecCls(object):
 		#get color scale
 		if zlog is None:
 			zlog = self._zlog
-		if PSD and:
+		if PSD:
 			if scale is None:
 				if zlog:
 					scale = self._psdlogscale

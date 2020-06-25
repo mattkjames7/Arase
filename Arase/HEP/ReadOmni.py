@@ -1,6 +1,6 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
-from ..Tools.SpecCls import SpecCls
+from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
@@ -90,11 +90,11 @@ def ReadOmni(Date):
 		
 		#now to store the spectra
 		if out['eFluxL'] is None:
-			out['eFluxL'] = SpecCls(SpecType='e',ylabel=ylabelL,zlabel=zlabelL,ylog=True,zlog=True,ScaleType='positive')
-		out['eFluxL'].AddData(sDateL,sutL,sEpochL,eL,L,bw=None,dt=None,Meta=meta['FEDO_L'],Label='HEP-L')
+			out['eFluxL'] = PSpecCls(SpecType='e',ylabel=ylabelL,zlabel=zlabelL,ylog=True,zlog=True,ScaleType='positive')
+		out['eFluxL'].AddData(sDateL,sutL,sEpochL,eL,L,ew=None,dt=None,Meta=meta['FEDO_L'],Label='HEP-L')
 		
 		if out['eFluxH'] is None:
-			out['eFluxH'] = SpecCls(SpecType='e',ylabel=ylabelH,zlabel=zlabelH,ylog=True,zlog=True,ScaleType='positive')
-		out['eFluxH'].AddData(sDateH,sutH,sEpochH,eH,H,bw=None,dt=None,Meta=meta['FEDO_H'],Label='HEP-H')
+			out['eFluxH'] = PSpecCls(SpecType='e',ylabel=ylabelH,zlabel=zlabelH,ylog=True,zlog=True,ScaleType='positive')
+		out['eFluxH'].AddData(sDateH,sutH,sEpochH,eH,H,ew=None,dt=None,Meta=meta['FEDO_H'],Label='HEP-H')
 			
 	return out	

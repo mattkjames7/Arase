@@ -3,7 +3,7 @@ from ..LEPe.ReadOmni import ReadOmni as LEP
 from ..MEPe.ReadOmni import ReadOmni as MEP 
 from ..HEP.ReadOmni import ReadOmni as HEP 
 from ..XEP.ReadOmni import ReadOmni as XEP 
-from ..Tools.CombineSpecCls import CombineSpecCls
+from ..Tools.CombinePSpecCls import CombinePSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 
 def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
@@ -61,4 +61,4 @@ def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 		if not len(list(tmp.keys())) == 0:
 			Data.append(tmp['eFluxSSD'])
 			
-	return CombineSpecCls(Data)
+	return CombinePSpecCls(Data)

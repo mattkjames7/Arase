@@ -1,6 +1,6 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
-from ..Tools.SpecCls import SpecCls
+from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
@@ -85,10 +85,10 @@ def ReadOmni(Date):
 		
 		#now to store the spectra
 		if out['eFluxSSD'] is None:
-			out['eFluxSSD'] = SpecCls(SpecType='e',ylabel=ylabelS,zlabel=zlabelS,ylog=True,zlog=True,ScaleType='positive')
+			out['eFluxSSD'] = PSpecCls(SpecType='e',ylabel=ylabelS,zlabel=zlabelS,ylog=True,zlog=True,ScaleType='positive')
 		out['eFluxSSD'].AddData(sDate,sut,sEpoch,essd,ssd,Meta=meta['FEDO_SSD'],Label='XEP')
 		if out['eFluxGSO'] is None:
-			out['eFluxGSO'] = SpecCls(SpecType='e',ylabel=ylabelG,zlabel=zlabelG,ylog=True,zlog=True,ScaleType='positive')
+			out['eFluxGSO'] = PSpecCls(SpecType='e',ylabel=ylabelG,zlabel=zlabelG,ylog=True,zlog=True,ScaleType='positive')
 		out['eFluxGSO'].AddData(sDate,sut,sEpoch,egso,gso,Meta=meta['FEDO_GSO'],Label='XEP')
 			
 	return out	

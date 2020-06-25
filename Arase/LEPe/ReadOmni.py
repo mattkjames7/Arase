@@ -1,6 +1,6 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
-from ..Tools.SpecCls import SpecCls
+from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
@@ -64,7 +64,7 @@ def ReadOmni(Date,KeV=True):
 		if KeV:
 			sEnergy = sEnergy/1000.0
 		emid = np.mean(sEnergy,axis=1)
-		bw = sEnergy[:,1,:] - sEnergy[:,0,:]
+		ew = sEnergy[:,1,:] - sEnergy[:,0,:]
 
 
 		#replace bad data
@@ -75,7 +75,7 @@ def ReadOmni(Date,KeV=True):
 			s = s*1000.0
 		
 			#plot labels
-			ylabel = 'Energy (KeV)'
+			ylabel = 'Energy (keV)'
 			zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2}$-sr$^{-1}$ KeV$^{-1}$)'
 		else:
 			
@@ -86,8 +86,8 @@ def ReadOmni(Date,KeV=True):
 		
 		#now to store the spectra
 		if out['eFlux'] is None:
-			out['eFlux'] = SpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
-		out['eFlux'].AddData(sDate,sut,sEpoch,emid,s,Meta=meta['FEDO'],bw=bw,Label='LEPe')
+			out['eFlux'] = PSpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+		out['eFlux'].AddData(sDate,sut,sEpoch,emid,s,Meta=meta['FEDO'],ew=ew,Label='LEPe')
 			
 	
 

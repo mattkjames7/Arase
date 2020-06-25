@@ -1,6 +1,6 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
-from ..Tools.SpecCls import SpecCls
+from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
@@ -42,7 +42,7 @@ def ReadOmni(Date):
 		'O+FluxTOF' : SpecCls object, contains oxygen ion fluxes
 		'O2+FluxTOF' : SpecCls object, contains molecular oxygen ion fluxes
 		
-	For more information about the SpecCls object, see Arase.Tools.SpecCls 
+	For more information about the PSpecCls object, see Arase.Tools.PSpecCls 
 		
 
 	'''			
@@ -115,11 +115,11 @@ def ReadOmni(Date):
 			#now to store the spectra
 			if not '_tof' in k:
 				if out[field] is None:
-					out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+					out[field] = PSpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 				out[field].AddData(sDate,sut,sEpoch,sEnergy,s,Meta=meta[k],Label='MEPi')
 			else:
 				if out[field] is None:
-					out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+					out[field] = PSpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
 				out[field].AddData(sDateTOF,sutTOF,sEpochTOF,sEnergy,s,Meta=meta[k],Label='MEPi')
 				
 	return out	

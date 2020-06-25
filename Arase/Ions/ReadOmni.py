@@ -2,7 +2,7 @@ import numpy as np
 from ..LEPi.ReadOmni import ReadOmni as LEP 
 from ..MEPi.ReadOmni import ReadOmni as MEP 
 
-from ..Tools.CombineSpecCls import CombineSpecCls
+from ..Tools.CombinePSpecCls import CombinePSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 
 def ReadOmni(Date,Instruments=['LEPi','MEPi']):
@@ -46,4 +46,4 @@ def ReadOmni(Date,Instruments=['LEPi','MEPi']):
 			DataHe.append(tmp['He+Flux'])
 			DataO.append(tmp['O+Flux'])			
 				
-	return CombineSpecCls(DataH),CombineSpecCls(DataHe),CombineSpecCls(DataO)
+	return CombinePSpecCls(DataH),CombinePSpecCls(DataHe),CombinePSpecCls(DataO)

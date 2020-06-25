@@ -1,6 +1,6 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
-from ..Tools.SpecCls import SpecCls
+from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
@@ -90,7 +90,7 @@ def ReadOmni(Date):
 			
 			#now to store the spectra
 			if out[kspec] is None:
-				out[kspec] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ScaleType='positive',ylog=True,zlog=True)
+				out[kspec] = PSpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ScaleType='positive',ylog=True,zlog=True)
 			out[kspec].AddData(sDate,sut,sEpoch,ke,s,Meta=meta[k],Label='LEPi')
 			
 
