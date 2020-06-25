@@ -413,12 +413,12 @@ class SpecCls(object):
 				nc = len(color)
 			for i in range(0,len(spec)):
 				if color is None:
-					ax.plot(freq[i],spec[i],label=labs[i])
+					ax.plot(freq[i],spec[i],label=labs[i],marker='.')
 				else:
-					ax.plot(freq[i],spec[i],color=color[i % nc],label=labs[i])
+					ax.plot(freq[i],spec[i],color=color[i % nc],label=labs[i],marker='.')
 			
 		else:
-			ax.plot(freq,spec,color=color)
+			ax.plot(freq,spec,color=color,marker='.')
 
 		#set the x-axis scale
 		if xlog is None:
