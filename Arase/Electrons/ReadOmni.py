@@ -9,6 +9,18 @@ from ..Tools.CDFEpochToUT import CDFEpochToUT
 def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 	'''
 	Get a SpecCls object containing all of the electron data in one place.
+
+
+	Inputs
+	======
+	Date : int
+		Integer date in the format yyyymmdd
+		If Date is a single integer - one date is loaded.
+		If Date is a 2-element tuple or list, all dates from Date[0] to
+		Date[1] are loaded.
+		If Date contains > 2 elements, all dates within the list will
+		be loaded.
+			
 	
 	'''
 
