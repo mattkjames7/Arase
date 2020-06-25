@@ -5,14 +5,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from .ContUT import ContUT
 from .DTPlotLabel import DTPlotLabel
 from scipy.interpolate import interp1d
-from .PSDtoCounts import PSDtoCounts
-from .PSDtoFlux import PSDtoFlux
-from .CountstoFlux import CountstoFlux
-from .CountstoPSD import CountstoPSD
-from .FitMaxwellianDist import FitMaxwellianDistCts,FitMaxwellianDist
-from .FitKappaDist import FitKappaDistCts,FitKappaDist
-from .KappaDist import KappaDist
-from .MaxwellBoltzmannDist import MaxwellBoltzmannDist
 
 defargs = {	'Meta' : None,
 			'dt' : None,
@@ -25,16 +17,9 @@ defargs = {	'Meta' : None,
 			'ScaleType' : 'range',
 			'nStd' : 2}
 
-amu = 1.6605e-27
-
-ParticleMass = { 	'e' : 9.10938356e-31,
-					'H' : 1.6726219e-27,
-					'He' : 4.002602*amu,
-					'O' : 15.999*amu,
-					'O2' : 15.999*amu*2}
 
 class SpecCls(object):
-	def __init__(self,SpecType='freq',**kwargs):
+	def __init__(self,**kwargs):
 		'''
 		An object for storing and plotting spectral data,
 		
@@ -43,8 +28,6 @@ class SpecCls(object):
 		
 		Inputs
 		=====
-		SpecType : str
-			'freq'|'e'|'H'|'He'|'O'|'O2'
 		xlabel : str
 			Label for x-axis
 		ylabel : str
@@ -69,12 +52,7 @@ class SpecCls(object):
 		self.dt = []
 		self.Meta = []
 		self.Label = []
-		self.V = []
-		self.Vbw = []
-		self.PSD = []
-		self.Mass = ParticleMass.get(SpecType,0.0)
 		self.n = 0
-		self.SpecType = SpecType
 		
 		#and the keywords
 		self.xlabel = kwargs.get('xlabel',defargs['xlabel'])
@@ -140,18 +118,7 @@ class SpecCls(object):
 		dt = np.zeros(ut.size,dtype='float32') + dt
 		return dt
 		
-	def _CalculatePSD(self,Spec,Energy,dE):
-		e = 1.6022e-19
-		V = np.sqrt(np.float64(e*2000.0*Energy)/self.Mass)
-		V0 = np.sqrt(np.float64(e*2000.0*(Energy-dE/2.0)/self.Mass))
-		V1 = np.sqrt(np.float64(e*2000.0*(Energy+dE/2.0)/self.Mass))
-		self.V.append(V)
-		self.Vbw.append(V1-V0)
-		
-		psd =  np.float64(Spec)*(np.float64(self.Mass)/(V**2)) * np.float64(10.0/e)
-		self.PSD.append(psd)
-		
-		
+
 					
 	
 	def AddData(self,Date,ut,Epoch,Freq,Spec,bw=None,dt=None,Meta=None,Label=''):
@@ -195,9 +162,7 @@ class SpecCls(object):
 		#get the bandwidth in the appropriate format
 		self.bw.append(self._ProcessBW(bw,Freq))
 
-		if self.SpecType != 'freq':
-			self._CalculatePSD(Spec,Freq,self.bw[-1])
-		
+
 		#calculate continuous time axis
 		self.utc.append(ContUT(Date,ut))
 		
@@ -208,24 +173,17 @@ class SpecCls(object):
 		self._CalculateTimeLimits() 
 		self._CalculateFrequencyLimits()
 		self._CalculateScale()
-		if self.SpecType != 'freq':
-			self._CalculateVLimits()
-			self._CalculatePSDScale()
-		
+
 		#add to the total count of spectrograms stored
 		self.n += 1
 	
-	def _GetSpectrum(self,I,sutc,dutc,Method,PSD):
+	def _GetSpectrum(self,I,sutc,dutc,Method):
 	
 		#get the appropriate data
 		l = self.Label[I]
 		utc = self.utc[I]
-		if PSD and self.SpecType != 'freq':
-			f = self.V[I]
-			Spec = self.PSD[I]		
-		else:
-			f = self.Freq[I]
-			Spec = self.Spec[I]		
+		f = self.Freq[I]
+		Spec = self.Spec[I]		
 		
 		#find the nearest
 		dt = np.abs(utc - sutc)
@@ -285,7 +243,7 @@ class SpecCls(object):
 		return e,s,l
 
 	
-	def GetSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,PSD=False):
+	def GetSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False):
 		'''
 		This method will return a spectrum from a given time.
 		
@@ -305,14 +263,11 @@ class SpecCls(object):
 		Split : bool
 			If True, the spectra will be returned as a list, if False,
 			they will be combined to form a single spectrum.
-		PSD : bool
-			If True and this is not a frequency spectrum, then phase
-			space density will be returned
 		
 		Returns
 		=======
 		freq : float/list
-			Array(s) of frequencies or energies
+			Array(s) of frequencies
 		spec : float/list
 			Array(s) containing specral data
 		labs : list
@@ -331,7 +286,7 @@ class SpecCls(object):
 		
 		#get the spectra for each element in  self.Spec
 		for i in range(0,self.n):
-			e,s,l = self._GetSpectrum(i,utc,dutc,Method,PSD)
+			e,s,l = self._GetSpectrum(i,utc,dutc,Method)
 			if len(s) > 0:
 				spec.append(s)
 				freq.append(e)
@@ -348,8 +303,8 @@ class SpecCls(object):
 		return freq,spec,labs
 		
 	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
-		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False,
-		FitKappa=False,FitMaxwellian=False,nox=False,noy=False):
+		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,
+		nox=False,noy=False):
 		'''
 		This method will plot a spectrum from a given time.
 		
@@ -369,9 +324,6 @@ class SpecCls(object):
 		Split : bool
 			If True, the spectra will be returned as a list, if False,
 			they will be combined to form a single spectrum.
-		PSD : bool
-			If True and this is not a frequency spectrum, then phase
-			space density will be plotted
 		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
 			If None - a new plot is created
 			If an instance of pyplot then a new Axes is created on an existing plot
@@ -382,20 +334,13 @@ class SpecCls(object):
 			if True, x-axis is logarithmic
 		ylog : bool
 			If True, y-axis is logarithmic
-		FitMaxwellian : bool or str
-			If True - the PSD will be used to fit a Maxwellian 
-			distribution, if 'counts' then the counts will be used 
-			instead.
-		FitKappa : bool or str
-			If True - the PSD will be used to fit a Kappa
-			distribution, if 'counts' then the counts will be used 
-			instead.			
+
 		
 				
 		'''	
 		
 		#get the spectra
-		freq,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,Split,PSD)
+		freq,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,Split)
 		
 		
 		#create the figure
@@ -433,12 +378,8 @@ class SpecCls(object):
 			ax.set_yscale('log')
 			
 		#set the axis labels
-		if PSD:
-			ax.set_xlabel('V (m s$^{-1}$)')
-			ax.set_ylabel('PSD (s$^3$ m$^{-6}$)')
-		else:
-			ax.set_xlabel(self.ylabel)
-			ax.set_ylabel(self.zlabel)
+		ax.set_xlabel(self.ylabel)
+		ax.set_ylabel(self.zlabel)
 			
 		#turn axes off when needed
 		if nox:
@@ -449,50 +390,13 @@ class SpecCls(object):
 			ax.yaxis.set_ticks([])
 
 
-		if (not FitKappa is False) or (not FitMaxwellian is False):
-			ylim = ax.get_ylim()
-			ax.set_ylim(ylim)
-			
-			
-			#get the combined spectra
-			v,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,False,True)
-			e = 1.6022e-19
-			E = 0.5*self.Mass*(v**2)/(e*1000)
-			
-			#convert to counts
-			C = PSDtoCounts(v,spec,self.Mass)
-
-			#fit spectrum
-			if (not FitKappa is False):
-				if FitKappa is 'counts':
-					nk,Tk,K,statk = FitKappaDistCts(v,C,1.0e5,1.0e6,self.Mass,Verbose=True)
-				else:
-					nk,Tk,K,statk = FitKappaDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
-				fk = KappaDist(nk,v,Tk,self.Mass,K)
-				if not PSD:
-					fk = PSDtoFlux(v,fk,self.Mass)
-					ax.plot(E,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
-				else:
-					ax.plot(v,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
-			if (not FitMaxwellian is False):
-				if FitMaxwellian is 'counts':
-					nm,Tm,statm = FitMaxwellianDistCts(v,C,1.0e5,1.0e6,self.Mass)
-				else:
-					nm,Tm,statm = FitMaxwellianDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
-				fm = MaxwellBoltzmannDist(nm,v,Tm,self.Mass)
-				if not PSD:
-					fm = PSDtoFlux(v,fm,self.Mass)
-					ax.plot(E,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
-				else:
-					ax.plot(v,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
-
 		ax.legend(fontsize=8)
 			
 		return ax
 				
 		
 	def Plot(self,Date=None,ut=[0.0,24.0],fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,
-			cmap='gnuplot',PSD=False,nox=False,noy=False):
+			cmap='gnuplot',nox=False,noy=False):
 		'''
 		Plots the spectrogram
 		
@@ -509,9 +413,6 @@ class SpecCls(object):
 			2-element start and end times for the plot, where each 
 			element is the time in hours sinsce the start fo the day,
 			e.g. 17:30 == 17.5.
-		PSD : bool
-			If True and this is not a frequency spectrum, then phase
-			space density will be plotted
 		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
 			If None - a new plot is created
 			If an instance of pyplot then a new Axes is created on an existing plot
@@ -555,25 +456,15 @@ class SpecCls(object):
 			ax.set_xlim(utclim)
 		if ylog is None:
 			ylog = self._ylog
-		if PSD and not self.SpecType == 'freq':
-			if ylog:
-				ax.set_yscale('log')
-				ax.set_ylim(self._logvlim)
-			else:
-				ax.set_ylim(self._vlim)
+		if ylog:
+			ax.set_yscale('log')
+			ax.set_ylim(self._logflim)
 		else:
-			if ylog:
-				ax.set_yscale('log')
-				ax.set_ylim(self._logflim)
-			else:
-				ax.set_ylim(self._flim)
+			ax.set_ylim(self._flim)
 			
 		#and labels
 		ax.set_xlabel(self.xlabel)
-		if PSD and self.SpecType != 'freq':
-			ax.set_ylabel('V (m s$^{-1}$)')
-		else:
-			ax.set_ylabel(self.ylabel)
+		ax.set_ylabel(self.ylabel)
 	
 		#turn axes off when needed
 		if nox:
@@ -587,18 +478,11 @@ class SpecCls(object):
 		#get color scale
 		if zlog is None:
 			zlog = self._zlog
-		if PSD and not self.SpecType == 'freq':
-			if scale is None:
-				if zlog:
-					scale = self._psdlogscale
-				else:
-					scale = self._psdscale
-		else:
-			if scale is None:
-				if zlog:
-					scale = self._logscale
-				else:
-					scale = self._scale
+		if scale is None:
+			if zlog:
+				scale = self._logscale
+			else:
+				scale = self._scale
 		if zlog:
 			norm = colors.LogNorm()
 		else:
@@ -606,7 +490,7 @@ class SpecCls(object):
 			
 		#create plots
 		for i in range(0,self.n):
-			tmp = self._PlotSpectrogram(ax,i,scale,norm,cmap,PSD)
+			tmp = self._PlotSpectrogram(ax,i,scale,norm,cmap)
 			if i == 0:
 				sm = tmp
 
@@ -624,13 +508,10 @@ class SpecCls(object):
 		cax = divider.append_axes("right", size="2.5%", pad=0.05)
 
 		cbar = fig.colorbar(sm,cax=cax) 
-		if PSD and self.SpecType != 'freq':
-			cbar.set_label('PSD (s$^3$ m$^{-6}$)')		
-		else:
-			cbar.set_label(self.zlabel)		
+		cbar.set_label(self.zlabel)		
 		return ax
 
-	def _PlotSpectrogram(self,ax,I,scale,norm,cmap,PSD):
+	def _PlotSpectrogram(self,ax,I,scale,norm,cmap):
 		'''
 		This will plot a single spectrogram (multiple may be stored in
 		this object at any one time
@@ -643,14 +524,9 @@ class SpecCls(object):
 		dt = self.dt[I]
 		bw = self.bw[I]
 		
-		if PSD and self.SpecType != 'freq':
-			bw = self.Vbw[I]
-			f = self.V[I]
-			Spec = self.PSD[I]		
-		else:
-			bw = self.bw[I]
-			f = self.Freq[I]
-			Spec = self.Spec[I]	
+		bw = self.bw[I]
+		f = self.Freq[I]
+		Spec = self.Spec[I]	
 		
 		#get the frequency band limits
 		bad = np.where(np.isnan(f))
@@ -761,45 +637,6 @@ class SpecCls(object):
 		self._logflim = 10**np.array(logflim)
 
 
-	def _CalculateVLimits(self):
-		'''
-		Loop through all of the stored spectra and work out the frequency
-		range to plot.
-		
-		'''
-		#initialize frequency limits
-		vlim = [0.0,-np.inf]
-		logvlim = [np.inf,-np.inf]
-		
-
-		#loop through each array
-		n = len(self.V)
-		for i in range(0,n):
-			f0 = self.V[i] - self.Vbw[i]/2.0
-			f1 = self.V[i] + self.Vbw[i]/2.0
-			mn = np.nanmin(f0)
-			mx = np.nanmax(f1)
-			if mn < vlim[0]:
-				vlim[0] = mn
-			if mx > vlim[1]:
-				vlim[1] = mx
-			lf0 = np.log10(f0)
-			lf1 = np.log10(f1)
-			bad = np.where(self.V[i] <= 0.0)
-			lf0[bad] = np.nan
-			lf1[bad] = np.nan
-
-			lmn = np.nanmin(lf0)
-			lmx = np.nanmax(lf1)
-			if lmn < logvlim[0]:
-				logvlim[0] = lmn
-			if lmx > logvlim[1]:
-				logvlim[1] = lmx
-
-		self._vlim = vlim
-		self._logvlim = 10**np.array(logvlim)
-
-
 		
 	def _CalculateScale(self):
 		'''
@@ -852,53 +689,4 @@ class SpecCls(object):
 		self._scale = scale
 		self._logscale = logscale
 	
-	def _CalculatePSDScale(self):
-		'''
-		Calculate the default scale limits for the plot.
-		
-		'''
-		scale = [np.inf,-np.inf]
-		logscale = [np.inf,-np.inf]
-		
-		n = len(self.PSD)
-		for i in range(0,n):
-			ls = np.log10(self.PSD[i])
-			bad = np.where(self.PSD[i] <= 0)
-			ls[bad] = np.nan
-				
-			if self._ScaleType == 'std':
-				mu = np.nanmean(self.PSD[i])
-				std = np.std(self.PSD[i])
-				
-				lmu = np.nanmean(ls)
-				lstd = np.std(ls)
-					
-				tmpscale = [mu - self._nStd*std, mu + self._nStd*std]
-				tmplogscale = 10**np.array([lmu - self._nStd*lstd, lmu + self._nStd*lstd])					
-				
-			elif self._ScaleType == 'positive':
-				#calculate the scale based on all values being positive 
-				std = np.sqrt((1.0/np.sum(self.Spec[i].size))*np.nansum((self.PSD[i])**2))
-				lstd = np.sqrt(((1.0/np.sum(np.isfinite(ls))))*np.nansum((ls)**2))
-					
-				tmpscale = [0.0,std*self._nStd]
-				tmplogscale = 10**np.array([np.nanmin(ls),lstd*self._nStd])			
-			else:
-				#absolute range
-				tmpscale = [np.nanmin(self.PSD[i]),np.nanmax(self.PSD[i])]
-				tmplogscale = 10**np.array([np.nanmin(ls),np.nanmax(ls)])
-
-
-			if tmpscale[0] < scale[0]:
-				scale[0] = tmpscale[0]
-			if tmpscale[1] > scale[1]:
-				scale[1] = tmpscale[1]
-			
-			if tmplogscale[0] < logscale[0]:
-				logscale[0] = tmplogscale[0]
-			if tmplogscale[1] > logscale[1]:
-				logscale[1] = tmplogscale[1]
 	
-		
-		self._psdscale = scale
-		self._psdlogscale = logscale

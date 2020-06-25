@@ -22,7 +22,7 @@ def CombineSpecCls(A):
 	n = np.size(A)
 	
 	#create the initial object
-	out = SpecCls(SpecType=A[0].SpecType,xlabel=A[0].xlabel,ylabel=A[0].ylabel,zlabel=A[0].zlabel,ylog=A[0]._ylog,zlog=A[0]._zlog,ScaleType=A[0]._ScaleType,nStd=A[0]._nStd)
+	out = SpecCls(xlabel=A[0].xlabel,ylabel=A[0].ylabel,zlabel=A[0].zlabel,ylog=A[0]._ylog,zlog=A[0]._zlog,ScaleType=A[0]._ScaleType,nStd=A[0]._nStd)
 	
 	#loop through and add each one
 	for i in range(0,n):
