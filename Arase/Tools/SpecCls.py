@@ -456,13 +456,24 @@ class SpecCls(object):
 		return ax
 				
 		
-	def Plot(self,fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,
+	def Plot(self,Date=None,ut=[0.0,24.0],fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,
 			cmap='gnuplot',PSD=False):
 		'''
 		Plots the spectrogram
 		
 		Inputs
 		======
+		Date : int32
+			This, along with 'ut' controls the time limits of the plot,
+			either set as a single date in the format yyyymmdd, or if 
+			plotting over multiple days then set a 2 element tuple/list/
+			numpy.ndarray with the start and end dates. If set to None 
+			(default) then the time axis limits will be calculated 
+			automatically.
+		ut : list/tuple
+			2-element start and end times for the plot, where each 
+			element is the time in hours sinsce the start fo the day,
+			e.g. 17:30 == 17.5.
 		PSD : bool
 			If True and this is not a frequency spectrum, then phase
 			space density will be plotted
@@ -493,7 +504,17 @@ class SpecCls(object):
 		ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
 		
 		#set axis limits
-		ax.set_xlim(self._utlim)
+		if Date is None:
+			ax.set_xlim(self._utlim)
+		else:
+			if np.size(Date) == 1:
+				Date0 = Date
+				Date1 = Date
+			else:
+				Date0 = Date[0]
+				Date1 = Date[1]
+			utclim = ContUT(np.array([Date0,Date1]),np.array(ut))
+			ax.set_xlim(utclim)
 		if ylog is None:
 			ylog = self._ylog
 		if PSD and not self.SpecType == 'freq':
