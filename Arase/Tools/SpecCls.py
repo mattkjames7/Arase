@@ -349,7 +349,7 @@ class SpecCls(object):
 		
 	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
 		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False,
-		FitKappa=False,FitMaxwellian=False):
+		FitKappa=False,FitMaxwellian=False,nox=False,noy=False):
 		'''
 		This method will plot a spectrum from a given time.
 		
@@ -439,6 +439,14 @@ class SpecCls(object):
 		else:
 			ax.set_xlabel(self.ylabel)
 			ax.set_ylabel(self.zlabel)
+			
+		#turn axes off when needed
+		if nox:
+			ax.set_xlabel('')
+			ax.xaxis.set_ticks([])
+		if noy:
+			ax.set_ylabel('')
+			ax.yaxis.set_ticks([])
 
 
 		if (not FitKappa is False) or (not FitMaxwellian is False):
@@ -484,7 +492,7 @@ class SpecCls(object):
 				
 		
 	def Plot(self,Date=None,ut=[0.0,24.0],fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,
-			cmap='gnuplot',PSD=False):
+			cmap='gnuplot',PSD=False,nox=False,noy=False):
 		'''
 		Plots the spectrogram
 		
@@ -519,7 +527,10 @@ class SpecCls(object):
 		scale : list
 			2-element list or tuple containing the minimum and maximum
 			extents of the color scale
-		
+		nox : bool
+			If True, no labels or tick marks are drawn for the x-axis
+		noy : bool
+			If True, no labels or tick marks are drawn for the y-axis
 		'''
 		
 		
@@ -563,6 +574,15 @@ class SpecCls(object):
 			ax.set_ylabel('V (m s$^{-1}$)')
 		else:
 			ax.set_ylabel(self.ylabel)
+	
+		#turn axes off when needed
+		if nox:
+			ax.set_xlabel('')
+			ax.xaxis.set_ticks([])
+		if noy:
+			ax.set_ylabel('')
+			ax.yaxis.set_ticks([])
+
 			
 		#get color scale
 		if zlog is None:
