@@ -92,9 +92,36 @@ class SpecCls(object):
 		
 		if bw is None:
 			#if bandwidth is None, then we must calculate it from the fequencies
-			df = Freq[1:] - Freq[:-1]
-			df = np.concatenate(([df[0]],df,[df[1]]))/2.0
-			bw = df[1:] + df[:-1]	
+			#Freqs are not necessarily in order annoyingly
+			if len(Freq.shape) == 1:
+				#remove bad ones first
+				good = np.where((Freq > 0) & np.isfinite(Freq))[0]
+				if good.size > 1:
+					Fg = Freq[good]
+					
+					#get just unique ones
+					Fu,ind,inv,cts = np.unique(Fg,return_counts=True,return_index=True,return_inverse=True)
+					
+					df = Fu[1:] - Fu[:-1]
+					df = np.concatenate(([df[0]],df,[df[1]]))/2.0
+					bwtmp = df[1:] + df[:-1]	
+					
+					bw = np.zeros(Freq.shape,dtype='float32') + np.nan
+					bw[good] = bwtmp[inv]	
+				else:
+					bw = np.zeros(Freq.shape,dtype='float32') + np.nan	
+			else:
+				srt = np.argsort(Freq[0,:])
+				tmpF = Freq[:,srt]
+			
+				df = tmpF[1:] - tmpF[:-1]
+				df = np.concatenate(([df[0]],df,[df[1]]))/2.0
+				bwtmp = df[1:] + df[:-1]
+				
+				
+				bw = np.zeros(Freq.shape,dtype='float32')
+				bw[srt] = bwtmp	
+			
 		elif np.size(bw) == 1:
 			#if it is a single value, then turn it into an array the same size as Freq
 			bw = np.zeros(Freq.shape,dtype='float32') + bw	
