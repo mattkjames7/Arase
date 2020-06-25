@@ -2,6 +2,7 @@ import numpy as np
 from ._ReadCDF import _ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
+from ..Tools.ListDates import ListDates
 
 def ReadEFD(Date):
 	'''
@@ -39,37 +40,56 @@ def ReadEFD(Date):
 				'spectra_EuEv_re' : ('SpectraEuEvRe','Frequency, $f$ (Hz)',r'EFD spectrum, $\Re(E_u)\Re(E_v)+\Im(E_u)\Im(E_v)$ ((mV/m)$^2$/Hz)'),
 				'spectra_EuEv_im' : ('SpectraEuEvIm','Frequency, $f$ (Hz)',r'EFD spectrum, $\Re(E_u)\Im(E_v)+\Im(E_u)\Re(E_v)$ ((mV/m)$^2$/Hz)'),}
 				
-	#read the CDF file
-	data,meta = _ReadCDF(Date,'efd',2,'spec')		
-	
-	#output dict
-	out = {}
-	
-	if data is None:
-		return None
+
+	#get a list of the dates to load		
+	if np.size(Date) == 1:
+		dates = np.array([Date])
+	elif np.size(Date) == 2:
+		dates = ListDates(Date[0],Date[1])
+	else:
+		dates = np.array([Date]).flatten()
 		
-	#get the time 
-	out['Epoch'] = data['Epoch']
-	out['Date'],out['ut'] = CDFEpochToUT(out['Epoch'])
-	
-	#the frequency arrays
-	out['F'] = data['frequency']
-	out['F100'] = data['frequency_100hz']
+	out = {	'Spectra' : None,
+			'SpectraEvEv' : None,
+			'SpectraEuEu' : None,
+			'SpectraEuEvRe' : None,
+			'SpectraEuEvIm' : None}
+
+
+	#loop through dates
+	for date in dates:	
+
+
+		#read the CDF file
+		data,meta = _ReadCDF(date,'efd',2,'spec')		
+		
+
+		if data is None:
+			continue
 			
-	#now to store the spectra
-	for k in list(fields.keys()):
-		spec = data[k]
-		bad = np.where(spec < 0)
-		spec[bad] = np.nan
-		field,ylabel,zlabel = fields[k]
-		f = data[meta[k]['DEPEND_1']]
-		if meta[k]['DEPEND_1'] == 'frequency':
-			bw = data['band_width']
-		else:
-			bw = np.ones(f.size,dtype='float32')
-		out[field] = SpecCls(SpecType='freq',ylabel=ylabel,zlabel=zlabel,ScaleType='positive')
-		out[field].AddData(out['Date'],out['ut'],out['Epoch'],f,spec,Meta=meta[k],dt=1.0,bw=bw)
+		#get the time 
+		sEpoch = data['Epoch']
+		sDate,sut = CDFEpochToUT(sEpoch)
 		
+		#the frequency arrays
+		sF = data['frequency']
+		sF100 = data['frequency_100hz']
+				
+		#now to store the spectra
+		for k in list(fields.keys()):
+			spec = data[k]
+			bad = np.where(spec < 0)
+			spec[bad] = np.nan
+			field,ylabel,zlabel = fields[k]
+			f = data[meta[k]['DEPEND_1']]
+			if meta[k]['DEPEND_1'] == 'frequency':
+				bw = data['band_width']
+			else:
+				bw = np.ones(f.size,dtype='float32')
+			if out[field] is None:
+				out[field] = SpecCls(SpecType='freq',ylabel=ylabel,zlabel=zlabel,ScaleType='positive',zlog=True)
+			out[field].AddData(sDate,sut,sEpoch,f,spec,Meta=meta[k],dt=1.0,bw=bw)
+			
 	return out	
 				
 				

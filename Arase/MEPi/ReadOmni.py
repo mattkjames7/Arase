@@ -2,6 +2,7 @@ import numpy as np
 from ._ReadCDF import _ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
+from ..Tools.ListDates import ListDates
 
 def ReadOmni(Date):
 	'''
@@ -40,25 +41,29 @@ def ReadOmni(Date):
 		
 
 	'''			
-				
-	#read the CDF file
-	data,meta = _ReadCDF(Date,2,'omniflux')		
 
-	if data is None:
-		return None
-	
-	#output dict
-	out = {}
-	
-	#get the time 
-	out['Epoch'] = data['epoch']
-	out['Date'],out['ut'] = CDFEpochToUT(out['Epoch'])
-	out['EpochTOF'] = data['epoch_tof']
-	out['DateTOF'],out['utTOF'] = CDFEpochToUT(out['EpochTOF'])
-	
-	#the energy arrays
-	out['Energy'] = data['FIDO_Energy']
-	
+
+	#get a list of the dates to load		
+	if np.size(Date) == 1:
+		dates = np.array([Date])
+	elif np.size(Date) == 2:
+		dates = ListDates(Date[0],Date[1])
+	else:
+		dates = np.array([Date]).flatten()
+		
+	out = {	'H+Flux' : None,
+			'He+Flux' : None,
+			'He++Flux' : None,
+			'O++Flux' : None,
+			'O+Flux' : None,
+			'O2+Flux' : None,
+			'H+FluxTOF' : None,
+			'He+FluxTOF' : None,
+			'He++FluxTOF' : None,
+			'O++FluxTOF' : None,
+			'O+FluxTOF' : None,
+			'O2+FluxTOF' : None}
+
 
 	#replace bad data
 	fields = {	'FPDO' : 		('H+Flux','Energy (keV/q)','Omni-directional H$^+$ flux (#/s-cm2-sr-keV/q)','H'),
@@ -73,20 +78,43 @@ def ReadOmni(Date):
 				'FOPPDO_tof' : 	('O++FluxTOF','Energy (keV/q)','Omni-directional O$^{++}$ Flux for TOF data (#/s-cm2-sr-keV/q)','O'),
 				'FODO_tof' : 	('O+FluxTOF','Energy (keV/q)','Omni-directional O$^+$ Flux for TOF data (#/s-cm2-sr-keV/q)','O'),
 				'FO2PDO_tof' : 	('O2+FluxTOF','Energy (keV/q)','Omni-directional O$_2^+$ Flux for TOF data (#/s-cm2-sr-keV/q)','O2') }
+
+
+	#loop through dates
+	for date in dates:	
+				
+		#read the CDF file
+		data,meta = _ReadCDF(date,2,'omniflux')		
+
+		if data is None:
+			continue
+		
 	
-	for k in list(fields.keys()):
-		s = data[k]
-		bad = np.where(s < 0)
-		s[bad] = np.nan
+		#get the time 
+		sEpoch = data['epoch']
+		sDate,sut = CDFEpochToUT(sEpoch)
+		sEpochTOF = data['epoch_tof']
+		sDateTOF,sutTOF = CDFEpochToUT(sEpochTOF)
 		
-		field,ylabel,zlabel,spectype = fields[k]
+		#the energy arrays
+		sEnergy = data['FIDO_Energy']
 		
-		#now to store the spectra
-		if not '_tof' in k:
-			out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
-			out[field].AddData(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta[k],Label='MEPi')
-		else:
-			out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
-			out[field].AddData(out['DateTOF'],out['utTOF'],out['EpochTOF'],out['Energy'],s,Meta=meta[k],Label='MEPi')
+		
+		for k in list(fields.keys()):
+			s = data[k]
+			bad = np.where(s < 0)
+			s[bad] = np.nan
 			
+			field,ylabel,zlabel,spectype = fields[k]
+			
+			#now to store the spectra
+			if not '_tof' in k:
+				if out[field] is None:
+					out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+				out[field].AddData(sDate,sut,sEpoch,sEnergy,s,Meta=meta[k],Label='MEPi')
+			else:
+				if out[field] is None:
+					out[field] = SpecCls(SpecType=spectype,ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+				out[field].AddData(sDateTOF,sutTOF,sEpochTOF,sEnergy,s,Meta=meta[k],Label='MEPi')
+				
 	return out	

@@ -1,6 +1,7 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
 from ..Tools.CDFEpochToUT import CDFEpochToUT
+from ..Tools.ListDates import ListDates
 
 def ReadMGF(Date):
 	'''
@@ -32,13 +33,16 @@ def ReadMGF(Date):
 
 	'''	
 
-	#read the CDF file
-	data,meta = _ReadCDF(Date,2,'8sec')		
 
-	if data is None:
-		return None
+	#get a list of the dates to load		
+	if np.size(Date) == 1:
+		dates = np.array([Date])
+	elif np.size(Date) == 2:
+		dates = ListDates(Date[0],Date[1])
+	else:
+		dates = np.array([Date]).flatten()
 
-	#create output array
+
 	dtype = [	('Date','int32'),
 				('ut','float32'),
 				('Epoch','int64'),
@@ -52,30 +56,55 @@ def ReadMGF(Date):
 				('BySM','float32'),
 				('BzSM','float32'),
 				('B','float32')]	
-				
-	n = data['epoch_8sec'].size
-	out = np.recarray(n,dtype=dtype)
-	
-	#get the data
-	out.Date,out.ut = CDFEpochToUT(data['epoch_8sec'])
-	out.Epoch = data['epoch_8sec']
+		
+	ne = []	
+	datarr = []
 
-	#copy the various fields across
-	out.B = data['magt_8sec']
-	out.BxGSE = data['mag_8sec_gse'][:,0]
-	out.ByGSE = data['mag_8sec_gse'][:,1]
-	out.BzGSE = data['mag_8sec_gse'][:,2]
-	out.BxGSM = data['mag_8sec_gsm'][:,0]
-	out.ByGSM = data['mag_8sec_gsm'][:,1]
-	out.BzGSM = data['mag_8sec_gsm'][:,2]
-	out.BxSM = data['mag_8sec_sm'][:,0]
-	out.BySM = data['mag_8sec_sm'][:,1]
-	out.BzSM = data['mag_8sec_sm'][:,2]
-	
-	for f in out.dtype.names:
-		if 'B' in f:
-			bad = np.where(out[f] == -1e+31)[0]
-			out[f][bad] = np.nan
+	#loop through dates
+	for date in dates:	
+
+		#read the CDF file
+		data,meta = _ReadCDF(date,2,'8sec')		
+
+		if data is None:
+			continue
+
+		#create output array
+
+					
+		n = data['epoch_8sec'].size
+		out = np.recarray(n,dtype=dtype)
+		
+		#get the data
+		out.Date,out.ut = CDFEpochToUT(data['epoch_8sec'])
+		out.Epoch = data['epoch_8sec']
+
+		#copy the various fields across
+		out.B = data['magt_8sec']
+		out.BxGSE = data['mag_8sec_gse'][:,0]
+		out.ByGSE = data['mag_8sec_gse'][:,1]
+		out.BzGSE = data['mag_8sec_gse'][:,2]
+		out.BxGSM = data['mag_8sec_gsm'][:,0]
+		out.ByGSM = data['mag_8sec_gsm'][:,1]
+		out.BzGSM = data['mag_8sec_gsm'][:,2]
+		out.BxSM = data['mag_8sec_sm'][:,0]
+		out.BySM = data['mag_8sec_sm'][:,1]
+		out.BzSM = data['mag_8sec_sm'][:,2]
+		
+		for f in out.dtype.names:
+			if 'B' in f:
+				bad = np.where(out[f] <= -1e+30)[0]
+				out[f][bad] = np.nan
+				
+		datarr.append(out)
+		ne.append(n)
+		
+	#combine together
+	n = np.sum(ne,dtype='int32')
+	out = np.recarray(n,dtype=dtype)
+	p = 0
+	for i in range(0,len(datarr)):
+		out[p:p+ne[i]] = datarr[i]
 	
 	return out
 	

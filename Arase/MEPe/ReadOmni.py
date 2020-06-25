@@ -2,6 +2,7 @@ import numpy as np
 from ._ReadCDF import _ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
+from ..Tools.ListDates import ListDates
 
 def ReadOmni(Date):
 	'''
@@ -27,36 +28,51 @@ def ReadOmni(Date):
 
 	'''		
 				
-				
-	#read the CDF file
-	data,meta = _ReadCDF(Date,2,'omniflux')		
 
-	if data is None:
-		return None
-	
-	#output dict
-	out = {}
-	
-	#get the time 
-	out['Epoch'] = data['epoch']
-	out['Date'],out['ut'] = CDFEpochToUT(out['Epoch'])
-	
-	#the energy arrays
-	out['Energy'] = data['FEDO_Energy']
-	
 
-	#replace bad data
-	s = data['FEDO']
-	bad = np.where(s < 0)
-	s[bad] = np.nan
-	
-	#plot labels
-	ylabel = 'Energy (keV)'
-	zlabel = 'Omni-directional Electron Flux (cm$^{-2}$ s$^{-1}$ sr$^{-1}$ keV$^{-1}$)'
-	
-	
-	#now to store the spectra
-	out['eFlux'] = SpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
-	out['eFlux'].AddData(out['Date'],out['ut'],out['Epoch'],out['Energy'],s,Meta=meta['FEDO'],Label='MEPe')
+	#get a list of the dates to load		
+	if np.size(Date) == 1:
+		dates = np.array([Date])
+	elif np.size(Date) == 2:
+		dates = ListDates(Date[0],Date[1])
+	else:
+		dates = np.array([Date]).flatten()
 		
+	out = {	'eFlux' : None}
+
+
+	#loop through dates
+	for date in dates:	
+					
+		#read the CDF file
+		data,meta = _ReadCDF(date,2,'omniflux')		
+
+		if data is None:
+			continue
+		
+
+		#get the time 
+		sEpoch = data['epoch']
+		sDate,sut = CDFEpochToUT(sEpoch)
+		
+		#the energy arrays
+		sEnergy = data['FEDO_Energy']
+		
+
+		#replace bad data
+		s = data['FEDO']
+		bad = np.where(s < 0)
+		s[bad] = np.nan
+		
+		#plot labels
+		ylabel = 'Energy (keV)'
+		zlabel = 'Omni-directional Electron Flux (cm$^{-2}$ s$^{-1}$ sr$^{-1}$ keV$^{-1}$)'
+		
+		
+		#now to store the spectra
+		if out['eFlux'] is None:
+			out['eFlux'] = SpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+		out['eFlux'].AddData(sDate,sut,sEpoch,sEnergy,s,Meta=meta['FEDO'],Label='MEPe')
+			
+			
 	return out	

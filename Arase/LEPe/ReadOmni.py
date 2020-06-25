@@ -2,6 +2,7 @@ import numpy as np
 from ._ReadCDF import _ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
+from ..Tools.ListDates import ListDates
 
 def ReadOmni(Date,KeV=True):
 	'''
@@ -28,47 +29,61 @@ def ReadOmni(Date,KeV=True):
 		
 
 	'''		
-				
-	#read the CDF file
-	data,meta = _ReadCDF(Date,2,'omniflux')		
-
-	if data is None:
-		return None
 	
-	#output dict
-	out = {}
-	
-	#get the time 
-	out['Epoch'] = data['Epoch']
-	out['Date'],out['ut'] = CDFEpochToUT(out['Epoch'])
-	
-	#the energy arrays
-	out['Energy'] = data['FEDO_Energy']
-	if KeV:
-		out['Energy'] = out['Energy']/1000.0
-	emid = np.mean(out['Energy'],axis=1)
-	bw = out['Energy'][:,1,:] - out['Energy'][:,0,:]
-
-
-	#replace bad data
-	s = data['FEDO']
-	bad = np.where(s < 0)
-	s[bad] = np.nan
-	if KeV:
-		s = s*1000.0
-	
-		#plot labels
-		ylabel = 'Energy (KeV)'
-		zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2}$-sr$^{-1}$ KeV$^{-1}$)'
+	#get a list of the dates to load		
+	if np.size(Date) == 1:
+		dates = np.array([Date])
+	elif np.size(Date) == 2:
+		dates = ListDates(Date[0],Date[1])
 	else:
+		dates = np.array([Date]).flatten()
 		
-		#plot labels
-		ylabel = 'Energy (eV)'
-		zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2$-sr$^{-1}$ eV$^{-1}$)'
-	
-	
-	#now to store the spectra
-	out['eFlux'] = SpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
-	out['eFlux'].AddData(out['Date'],out['ut'],out['Epoch'],emid,s,Meta=meta['FEDO'],bw=bw,Label='LEPe')
+	out = {	'eFlux' : None}
+
+	#loop through dates
+	for date in dates:	
+				
+		#read the CDF file
+		data,meta = _ReadCDF(date,2,'omniflux')		
+
+		if data is None:
+			continue
 		
-	return out	
+
+		#get the time 
+		sEpoch = data['Epoch']
+		sDate,sut = CDFEpochToUT(sEpoch)
+		
+		#the energy arrays
+		sEnergy = data['FEDO_Energy']
+		if KeV:
+			sEnergy = sEnergy/1000.0
+		emid = np.mean(sEnergy,axis=1)
+		bw = sEnergy[:,1,:] - sEnergy[:,0,:]
+
+
+		#replace bad data
+		s = data['FEDO']
+		bad = np.where(s < 0)
+		s[bad] = np.nan
+		if KeV:
+			s = s*1000.0
+		
+			#plot labels
+			ylabel = 'Energy (KeV)'
+			zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2}$-sr$^{-1}$ KeV$^{-1}$)'
+		else:
+			
+			#plot labels
+			ylabel = 'Energy (eV)'
+			zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2$-sr$^{-1}$ eV$^{-1}$)'
+		
+		
+		#now to store the spectra
+		if out['eFlux'] is None:
+			out['eFlux'] = SpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)
+		out['eFlux'].AddData(sDate,sut,sEpoch,emid,s,Meta=meta['FEDO'],bw=bw,Label='LEPe')
+			
+	
+
+	return out
