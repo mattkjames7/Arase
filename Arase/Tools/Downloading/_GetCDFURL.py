@@ -23,7 +23,7 @@ def _GetCDFURL(Year,Month,url0):
 	tmpfname = tmppath + '{:17.7f}.tmp'.format(time.time())
 	
 	#wget the file
-	ret = os.system('wget '+url+' -O '+tmpfname)
+	ret = os.system('wget --no-verbose '+url+' -O '+tmpfname)
 	
 	if ret != 0:
 		return [],[]

@@ -67,7 +67,7 @@ def _DownloadData(url0,fname,outpath,StartYear=2016,EndYear=2019,vfmt=['v','.'],
 			for j in range(0,nu):
 				print('Downloading file {0} of {1} ({2})'.format(j+1,nu,fnames[j]))
 
-				os.system('wget '+urls[j]+' -O '+outpath+fnames[j])
+				os.system('wget --no-verbose '+urls[j]+' -O '+outpath+fnames[j])
 
 				new_idx.Date[p] = Date[j]
 				new_idx.FileName[p] = fnames[j]
