@@ -1,5 +1,5 @@
 import numpy as np
-from ._ReadCDF import _ReadCDF
+from .ReadCDF import ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates

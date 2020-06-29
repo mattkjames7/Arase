@@ -1,9 +1,9 @@
 import numpy as np
-from ._ReadCDF import _ReadCDF
+from .ReadCDF import ReadCDF
 from ..Tools.SpecCls import SpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 
-def Read3D(Date):
+def Read3D(Date,L=2):
 	'''
 	Reads the level 2 3dflux data product for a given date.
 	
@@ -26,7 +26,7 @@ def Read3D(Date):
 	'''
 				
 	#read the CDF file
-	data,meta = _ReadCDF(Date,2,'3dflux')		
+	data,meta = ReadCDF(Date,L,'3dflux')		
 
 	if data is None:
 		return None

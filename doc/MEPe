@@ -1,0 +1,10 @@
+Field			Description				Dimension
+------------------------------------------------------
+epoch			Time					nt
+FEDU_Energy		Centre of energy bin	ne = 16
+FEDU_APDno		APD detector index		na = 16
+FEDU_Sector		Spin sector number		ns = 32
+FEDU			Diff number flux		(nt,ns,ne,ns)
+FEEDU			Diff energy flux		(nt,ns,ne,ns)
+FEDU_Angle_gse	Direction of FEDU (GSE)	(nt,2(elevation,azimuth),na,ns)
+FEDU_alpha		Pitch angle				(nt,ns,ne,na)

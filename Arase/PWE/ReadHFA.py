@@ -1,5 +1,5 @@
 import numpy as np
-from ._ReadCDF import _ReadCDF
+from .ReadCDF import ReadCDF
 from ..Tools.CombineSpecCls import CombineSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from .ReadHFAHigh import ReadHFAHigh

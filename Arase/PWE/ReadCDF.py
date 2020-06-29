@@ -2,9 +2,9 @@ import numpy as np
 import os
 from .. import Globals
 from ..Tools.Downloading._ReadDataIndex import _ReadDataIndex
-from ..Tools.ReadCDF import ReadCDF
+from ..Tools.ReadCDF import ReadCDF as RCDF
 
-def _ReadCDF(Date,subcomp,L,prod):
+def ReadCDF(Date,subcomp,L,prod):
 	'''
 	Reads the CDF file containing Arase XEP data.
 
@@ -77,4 +77,4 @@ def _ReadCDF(Date,subcomp,L,prod):
 		return None,None
 		
 	#read the file
-	return ReadCDF(fname)
+	return RCDF(fname)

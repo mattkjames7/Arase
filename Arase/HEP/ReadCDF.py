@@ -2,9 +2,9 @@ import numpy as np
 import os
 from .. import Globals
 from ..Tools.Downloading._ReadDataIndex import _ReadDataIndex
-from ..Tools.ReadCDF import ReadCDF
+from ..Tools.ReadCDF import ReadCDF as RCDF
 
-def _ReadCDF(Date,L,prod):
+def ReadCDF(Date,L,prod):
 	'''
 	Reads the CDF file containing Arase HEP data.
 
@@ -62,4 +62,4 @@ def _ReadCDF(Date,L,prod):
 		return None,None
 		
 	#read the file
-	return ReadCDF(fname)
+	return RCDF(fname)

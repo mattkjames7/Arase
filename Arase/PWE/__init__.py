@@ -5,3 +5,4 @@ from .ReadHFALow import ReadHFALow
 from .ReadHFAHigh import ReadHFAHigh
 from .ReadUHDensity import ReadUHDensity
 from .RebuildDataIndex import RebuildDataIndex
+from .ReadCDF import ReadCDF

@@ -2,11 +2,11 @@ import numpy as np
 import os
 from .. import Globals
 from ..Tools.Downloading._ReadDataIndex import _ReadDataIndex
-from ..Tools.ReadCDF import ReadCDF
+from ..Tools.ReadCDF import ReadCDF as RCDF
 
-def _ReadCDF(Date,L,prod):
+def ReadCDF(Date,L,prod):
 	'''
-	Reads the CDF file containing Arase MEPe data.
+	Reads the CDF file containing Arase XEP data.
 
 	Inputs
 	======
@@ -21,9 +21,7 @@ def _ReadCDF(Date,L,prod):
 	Available data products
 	=======================
 	L		prod
-	2		'omniflux'
-	2		'3dflux'
-	3		'3dflux'
+	2		'8sec'
 	
 	Returns
 	=======
@@ -35,10 +33,12 @@ def _ReadCDF(Date,L,prod):
 		dictionary.
 		
 	'''
-	
-	idxfname = Globals.DataPath + 'MEPe/Index-L{:01d}-{:s}.dat'.format(L,prod)
-	datapath = Globals.DataPath + 'MEPe/l{:01d}/{:s}/'.format(L,prod)
-	
+
+
+
+	idxfname = Globals.DataPath + 'MGF/Index-L{:01d}-{:s}.dat'.format(L,prod)
+	datapath = Globals.DataPath + 'MGF/l{:01d}/{:s}/'.format(L,prod)
+
 	#read the data index
 	idx = _ReadDataIndex(idxfname)
 
@@ -63,4 +63,4 @@ def _ReadCDF(Date,L,prod):
 		return None,None
 		
 	#read the file
-	return ReadCDF(fname)
+	return RCDF(fname)

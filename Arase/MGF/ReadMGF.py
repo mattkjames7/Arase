@@ -1,5 +1,5 @@
 import numpy as np
-from ._ReadCDF import _ReadCDF
+from .ReadCDF import ReadCDF
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
@@ -69,7 +69,7 @@ def ReadMGF(Date):
 	for date in dates:	
 
 		#read the CDF file
-		data,meta = _ReadCDF(date,2,'8sec')		
+		data,meta = ReadCDF(date,2,'8sec')		
 
 		if data is None:
 			continue
@@ -110,6 +110,7 @@ def ReadMGF(Date):
 	p = 0
 	for i in range(0,len(datarr)):
 		out[p:p+ne[i]] = datarr[i]
+		p += ne[i]
 	
 	return out
 	

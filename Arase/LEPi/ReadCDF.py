@@ -2,11 +2,11 @@ import numpy as np
 import os
 from .. import Globals
 from ..Tools.Downloading._ReadDataIndex import _ReadDataIndex
-from ..Tools.ReadCDF import ReadCDF
+from ..Tools.ReadCDF import ReadCDF as RCDF
 
-def _ReadCDF(Date,L,prod):
+def ReadCDF(Date,L,prod):
 	'''
-	Reads the CDF file containing Arase LEPe data.
+	Reads the CDF file containing Arase LEPi data.
 
 	Inputs
 	======
@@ -35,8 +35,8 @@ def _ReadCDF(Date,L,prod):
 		
 	'''
 	
-	idxfname = Globals.DataPath + 'LEPe/Index-L{:01d}-{:s}.dat'.format(L,prod)
-	datapath = Globals.DataPath + 'LEPe/l{:01d}/{:s}/'.format(L,prod)
+	idxfname = Globals.DataPath + 'LEPi/Index-L{:01d}-{:s}.dat'.format(L,prod)
+	datapath = Globals.DataPath + 'LEPi/l{:01d}/{:s}/'.format(L,prod)
 	
 	#read the data index
 	idx = _ReadDataIndex(idxfname)
@@ -55,11 +55,11 @@ def _ReadCDF(Date,L,prod):
 	
 	#path
 	fname = datapath + fname
-	
+
 	#check file exists
 	if not os.path.isfile(fname):
 		print('Index is broken: Update the data index')
 		return None,None
 		
 	#read the file
-	return ReadCDF(fname)
+	return RCDF(fname)

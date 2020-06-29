@@ -1,5 +1,5 @@
 import numpy as np
-from ._ReadCDF import _ReadCDF
+from .ReadCDF import ReadCDF
 from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
@@ -54,7 +54,7 @@ def ReadOmni(Date):
 				
 					
 		#read the CDF file
-		data,meta = _ReadCDF(date,2,'omniflux')		
+		data,meta = ReadCDF(date,2,'omniflux')		
 
 		if data is None:
 			continue
