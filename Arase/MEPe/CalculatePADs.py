@@ -5,7 +5,7 @@ from ..Tools.ContUT import ContUT
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from scipy.stats import binned_statistic
 
-def CalculatePADs(Date,na=18):
+def CalculatePADs(Date,na=18,Verbose=True):
 	
 	#this is the output dictionary
 	out = {}
@@ -46,14 +46,16 @@ def CalculatePADs(Date,na=18):
 	bad = np.where(FLUX <= 0)
 	FLUX[bad] = np.nan
 	for i in range(0,nt):
-		print('\r{:6.2f}%'.format(100.0*(i+1)/nt),end='')
+		if Verbose:
+			print('\r{:6.2f}%'.format(100.0*(i+1)/nt),end='')
 		for j in range(0,ne):
 			a = alpha[i].flatten()
 			f = FLUX[i,:,j].flatten()
 			good = np.where(np.isfinite(f))[0]
 			if good.size > 0:
 				flux[i,j],_,_ = binned_statistic(a[good],f[good],statistic='mean',bins=Alpha)
-	print()		
+	if Verbose:
+		print()		
 	
 	tmp = {}
 	tmp['Date'] = Date

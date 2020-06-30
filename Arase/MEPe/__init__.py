@@ -5,3 +5,4 @@ from .ReadOmni import ReadOmni
 from .Read3D import Read3D
 from .GetPitchAngle import GetPitchAngle
 from .CalculatePADs import CalculatePADs
+from .ReadIndex import ReadIndex

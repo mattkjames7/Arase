@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def _ReduceDownloadList(urls,files,Date,Ver,idx,Overwrite=False):
+def _ReduceDownloadList(urls,files,Date,Ver,idx,dates,Overwrite=False):
 	'''
 	'''
 	
@@ -26,6 +26,13 @@ def _ReduceDownloadList(urls,files,Date,Ver,idx,Overwrite=False):
 				inidx = ((idx.Date == Date[i]) & (idx.Version == Ver[i])).any()
 				if inidx:
 					keep[i] = False
+
+	#check which dates are in "dates"
+	for i in range(0,nf):
+		if not Date[i] in dates:
+			keep[i] = False
+	
+
 	
 	#reduce arrays
 	use = np.where(keep)[0]

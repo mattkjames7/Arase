@@ -2,7 +2,7 @@ from .. import Globals
 import numpy as np
 from ..Tools.Downloading._DownloadData import _DownloadData
 
-def DownloadData(L,prod,StartYear=2016,EndYear=2019,Overwrite=False):
+def DownloadData(L,prod,Date=[20170101,20200101],Overwrite=False,Verbose=True):
 	'''
 	Downloads Arase MEPi data. This routine will look for newer versions
 	of existing data too.
@@ -13,10 +13,11 @@ def DownloadData(L,prod,StartYear=2016,EndYear=2019,Overwrite=False):
 		Level of data to download 
 	prod : str
 		Data product to download
-	StartYear : int
-		Year to start search for new data
-	EndYear : int
-		Last year to search for data
+	Date : int
+		Date to download data for in format yyyymmdd
+		If single date - only data from that one day will be fetched
+		If 2-element array - dates from Date[0] to Date[1] will be downloaded
+		If > 2 elements - this is treated as a specific list of dates to download
 	Overwrite : bool
 		Overwrites existing data if True
 
@@ -34,7 +35,7 @@ def DownloadData(L,prod,StartYear=2016,EndYear=2019,Overwrite=False):
 	idxfname = Globals.DataPath + 'MEPi/Index-L{:01d}-{:s}.dat'.format(L,prod)
 	datapath = Globals.DataPath + 'MEPi/l{:01d}/{:s}/'.format(L,prod)
 	
-	_DownloadData(url0,idxfname,datapath,StartYear,EndYear,vfmt,Overwrite)
+	_DownloadData(url0,idxfname,datapath,Date,vfmt,Overwrite,Verbose)
 
 			
 			
