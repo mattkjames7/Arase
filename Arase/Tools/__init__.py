@@ -10,3 +10,6 @@ from .KappaDist import KappaDist,KappaDistCts
 from .FitMaxwellianDist import FitMaxwellianDist,FitMaxwellianDistCts
 from .FitKappaDist import FitKappaDist,FitKappaDistCts
 from .ListDates import ListDates
+from .SpecCls import SpecCls
+from .PSpecCls import PSpecCls 
+from .PSpecPADCls import PSpecPADCls
