@@ -43,7 +43,7 @@ def CalculatePADs(Date,na=18):
 	
 	#loop through each dimension (slow!)
 	FLUX = data['FEEDU']
-	bad = np.where(FLUX < 0)
+	bad = np.where(FLUX <= 0)
 	FLUX[bad] = np.nan
 	for i in range(0,nt):
 		print('\r{:6.2f}%'.format(100.0*(i+1)/nt),end='')
