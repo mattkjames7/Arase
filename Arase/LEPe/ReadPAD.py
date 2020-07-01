@@ -1,8 +1,9 @@
 import numpy as np
 from ..Tools.ReadPAD import ReadPAD as RPAD
 from .. import Globals
+from ..Tools.PSpecPADCls import PSpecPADCls
 
-def ReadPAD(Date,SpecType):
+def ReadPAD(Date,SpecType,ReturnSpecObject=True):
 	'''
 	Date : int
 		Date to download data for in format yyyymmdd
@@ -11,9 +12,18 @@ def ReadPAD(Date,SpecType):
 		If > 2 elements - this is treated as a specific list of dates to download
 	SpecType : str
 		'eFlux'
+	ReturnSpecObject : bool
+		If True, then a PSpecPADCls object (which can plot the data) is 
+		returned, otherwise a dictionary containing the data is returned
+		
 	
 	'''
 
 	path = Globals.DataPath + 'LEPe/PAD/'
 	
-	return RPAD(Date,path,SpecType)
+	pad = RPAD(Date,path,SpecType)
+
+	if ReturnSpecObject:
+		return PSpecPADCls(pad)
+	else:
+		return pad
