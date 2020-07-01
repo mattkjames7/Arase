@@ -10,6 +10,7 @@ from .PSDtoFlux import PSDtoFlux
 from .CountstoFlux import CountstoFlux
 from .CountstoPSD import CountstoPSD
 from scipy.stats import mode
+import DateTimeTools as TT
 
 defargs = {	'Meta' : None,
 			'dt' : None,
@@ -18,7 +19,7 @@ defargs = {	'Meta' : None,
 			'elabel' : '$E$ (keV)',
 			'vlabel' : '$V$ (m s$^{-1}$)',
 			'alabel' : r'Pitch Angle, $\alpha$ ($^{\circ}$)',
-			'flabel' : '',
+			'flabel' : 'Flux (s$^{-1}$ cm$^{-2}$-sr$^{-1}$ KeV$^{-1}$)',
 			'plabel' : 'PSD (s$^3$ m$^{-6}$)',
 			'elog' : True,
 			'vlog' : True,
@@ -97,7 +98,7 @@ class PSpecPADCls(object):
 		self.flabel = kwargs.get('flabel',defargs['flabel'])
 		self.plabel = kwargs.get('plabel',defargs['plabel'])
 		self._elog = kwargs.get('elog',defargs['elog'])
-		self._elog = kwargs.get('vlog',defargs['vlog'])
+		self._vlog = kwargs.get('vlog',defargs['vlog'])
 		self._flog = kwargs.get('flog',defargs['flog'])
 		self._plog = kwargs.get('plog',defargs['plog'])
 		self._ScaleType = kwargs.get('ScaleType',defargs['ScaleType'])
@@ -219,209 +220,366 @@ class PSpecPADCls(object):
 		# s = s[srt]
 		# return e,s,l
 
-	
-	# def GetSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,PSD=False):
-		# '''
-		# This method will return a spectrum from a given time.
-		
-		# Inputs
-		# ======
-		# Date : int
-			# Date in format yyyymmdd
-		# ut : float
-			# Time in hours since beginning of the day
-		# Method : str
-			# 'nearest'|'interpolate' - will find the nearest spectrum to
-			# the time specified time, or will interpolate between two 
-			# surrounding spectra.
-		# Maxdt : float
-			# Maximum difference in time between the specified time and the
-			# time of the spectra in seconds.
-		# Split : bool
-			# If True, the spectra will be returned as a list, if False,
-			# they will be combined to form a single spectrum.
-		# PSD : bool
-			# If True then phase space density will be returned
-		
-		# Returns
-		# =======
-		# energy : float/list
-			# Array(s) of energies
-		# spec : float/list
-			# Array(s) containing specral data
-		# labs : list
-			# List of plot labels
-		
-		# '''
-	
-		# #convert to continuous time
-		# utc = ContUT(np.array([Date]),np.array([ut]))[0]
-		# dutc = Maxdt/3600.0
-		
-		# #create the objects to store spectra and energy bins
-		# spec = []
-		# energy = []
-		# labs = []
-		
-		# #get the spectra for each element in  self.Spec
-		# for i in range(0,self.n):
-			# e,s,l = self._GetSpectrum(i,utc,dutc,Method,PSD)
-			# if len(s) > 0:
-				# spec.append(s)
-				# energy.append(e)
-				# labs.append(l)
+	def _GetSpectrum(self,sutc,dutc,Method,xparam,zparam):
+		'''
+		Return a 2D array of the nearest spectrum to the specified time
+		(or interpolated between the two surrounding ones)
+		'''
+		#select PSD or Flux
+		if xparam == 'V':
+			x = self.V
+			x0 = self.V0
+			x1 = self.V1
+			xlabel = self.vlabel
+		else:
+			x = self.Emid
+			x0 = self.Emin
+			x1 = self.Emax
+			xlabel = self.elabel
+		y = 0.5*(self.Alpha[1:] + self.Alpha[:-1])
+		y0 = self.Alpha[:-1]
+		y1 = self.Alpha[1:]
+		ylabel = self.alabel
+		if zparam == 'PSD':
+			z = self.PSD
+			zlabel = self.plabel
+		else:
+			z = self.Flux
+			zlabel = self.flabel
 			
-		# #combine if necessary
-		# if not Split:
-			# spec = np.concatenate(spec)
-			# energy = np.concatenate(energy)
-			# srt = np.argsort(energy)
-			# spec = spec[srt]
-			# energy = energy[srt]
+		#sort the E/V axis
+		srt = np.argsort(x)
+		x = x[srt]
+		x0 = x0[srt]
+		x1 = x1[srt]
+		z = z[:,srt,:]
 			
-		# return energy,spec,labs
+		#find the surrounding utc
+		utc = self.utc
+		dt = np.abs(utc - sutc)
+		near = np.where(dt == dt.min())[0][0]
 		
-	# def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
-		# fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False,
-		# FitKappa=False,FitMaxwellian=False,nox=False,noy=False):
-		# '''
-		# This method will plot a spectrum from a given time.
+		#check if the nearest is within dutc
+		if dt[near] > dutc:
+			return None,None,None		
+			
+		if (Method == 'nearest') or (sutc < utc[0]) or (sutc > utc[-1]):
+			z = z[near,:,:]
+			if len(x.shape) == 2:
+				x = x[near,:]
+				x0 = x0[near,:]
+				x1 = x1[near,:]
+			
+		else:
+			#in this case we need to find the two surrounding neighbours
+			#and interpolate between them
+			bef = np.where(utc <= sutc)[0][-1]
+			aft = np.where(utc > sutc)[0][0]
+			
+			z0 = z[bef,:,:]
+			z1 = z[aft,:,:]
+			
+			if len(x.shape) == 2:
+				_x0 = x[near,:]
+				_x1 = x[near,:]
+				_x00 = x0[near,:]
+				_x01 = x0[near,:]
+				_x10 = x1[near,:]
+				_x11 = x1[near,:]
+			else:
+				_x0 = x
+				_x1 = x
+				_x00 = x0
+				_x01 = x0
+				_x10 = x1
+				_x11 = x1
+			
+			dt = utc[aft] - utc[bef]
+			dz = z1 - z0
+			dx = _x1 - _x0
+			
+			dzdt = dz/dt
+			dxdt = dx/dt
+			
+			m = sutc - utc[bef]
+			
+			z = z0 + m*dzdt
+			x = _x0 + m*dxdt	
+			x0 = _x00 + m*dxdt	
+			x1 = _x10 + m*dxdt	
+				
+		return (x,x0,x1),(y,y0,y1),z,xlabel,ylabel,zlabel
 		
-		# Inputs
-		# ======
-		# Date : int
-			# Date in format yyyymmdd
-		# ut : float
-			# Time in hours since beginning of the day
-		# Method : str
-			# 'nearest'|'interpolate' - will find the nearest spectrum to
-			# the time specified time, or will interpolate between two 
-			# surrounding spectra.
-		# Maxdt : float
-			# Maximum difference in time between the specified time and the
-			# time of the spectra in seconds.
-		# Split : bool
-			# If True, the spectra will be returned as a list, if False,
-			# they will be combined to form a single spectrum.
-		# PSD : bool
-			# If True then phase space density will be plotted
-		# fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
-			# If None - a new plot is created
-			# If an instance of pyplot then a new Axes is created on an existing plot
-			# If Axes instance, then plotting is done on existing Axes
-		# maps : list
-			# [xmaps,ymaps,xmap,ymap] controls position of subplot
-		# xlog : bool
-			# if True, x-axis is logarithmic
-		# ylog : bool
-			# If True, y-axis is logarithmic
-		# FitMaxwellian : bool or str
-			# If True - the PSD will be used to fit a Maxwellian 
-			# distribution, if 'counts' then the counts will be used 
-			# instead.
-		# FitKappa : bool or str
-			# If True - the PSD will be used to fit a Kappa
-			# distribution, if 'counts' then the counts will be used 
-			# instead.			
+	def GetSpectrum2D(self,ut,Method='nearest',Maxdt=60.0,xparam='E',zparam='Flux'):
+		
+		
+		
+		#get the current date
+		Date = mode(self.Date)[0][0]
+		
+		#get the utc
+		utc = ContUT(Date,ut)[0]
+		
+		#get the 2D spectrum
+		x,y,z,xlabel,ylabel,zlabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,xparam,zparam)
+	
+	
+		return x,y,z,xlabel,ylabel,zlabel
+	
+	def GetSpectrum1D(self,ut,Bin=0,Method='nearest',Maxdt=60.0,xparam='E',zparam='Flux'):
+		'''
+		This method will return a spectrum from a given time.
+		
+		Inputs
+		======
+		Date : int
+			Date in format yyyymmdd
+		ut : float
+			Time in hours since beginning of the day
+		Method : str
+			'nearest'|'interpolate' - will find the nearest spectrum to
+			the time specified time, or will interpolate between two 
+			surrounding spectra.
+		Maxdt : float
+			Maximum difference in time between the specified time and the
+			time of the spectra in seconds.
+		Split : bool
+			If True, the spectra will be returned as a list, if False,
+			they will be combined to form a single spectrum.
+		PSD : bool
+			If True then phase space density will be returned
+		
+		Returns
+		=======
+		energy : float/list
+			Array(s) of energies
+		spec : float/list
+			Array(s) containing specral data
+		labs : list
+			List of plot labels
+		
+		'''
+	
+		#get the current date
+		Date = mode(self.Date)[0][0]
+		
+		#get the utc
+		utc = ContUT(Date,ut)[0]
+		
+		#get the 2D spectrum (this could get a little confusing)
+		if xparam == 'alpha':
+			_,x,y,_,xlabel,ylabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,'E',zparam)
+			y = y[Bin]
+		else:
+			x,_,y,xlabel,_,ylabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,xparam,zparam)
+			y = y[:,Bin]
+	
+		return x,y,xlabel,ylabel
+
+	def PlotSpectrum1D(self,ut,Bin=0,Method='nearest',Maxdt=60.0,xparam='E',yparam='Flux',
+		fig=None,maps=[1,1,0,0],color=None,xlog=None,ylog=None,nox=False,noy=False,
+		scale=None,cmap='gnuplot'):	
+		
+		#get the spectrum
+		x,y,xlabel,ylabel = self.GetSpectrum1D(ut,Bin,Method,Maxdt,xparam,yparam)
+		x = x[0]
+
+		
+		#create the figure
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+		else:
+			ax = fig	
+			
+		#get the yparameter stuff
+		if xparam == 'E':
+			if xlog is None:
+				xlog = self._elog
+			ax.set_xlim(self._elim)
+		elif xparam == 'V':
+			if xlog is None:
+				xlog = self._vlog
+			ax.set_xlim(self._vlim)
+		elif xparam == 'alpha':
+			xlog = False
+			ax.set_xlim([0.0,180.0])
+		else:
+			return		
+				
+		if xlog:
+			ax.set_xscale('log')
+			
+
+		#turn axes off when needed
+		if nox:
+			ax.set_xlabel('')
+			ax.xaxis.set_ticks([])
+		if noy:
+			ax.set_ylabel('')
+			ax.yaxis.set_ticks([])
+		
+		#get z stuff
+		if yparam == 'Flux':
+			if ylog is None:
+				ylog = self._flog
+		elif yparam == 'PSD':
+			if ylog is None:
+				ylog = self._plog
+
+		if ylog:
+			ax.set_yscale('log')
+				
+		#plot the data
+		ax.plot(x,y,marker='.',color=color)
+		
+		
+		#labels
+		ax.set_xlabel(xlabel)
+		ax.set_ylabel(ylabel)
+
+		Date = mode(self.Date)[0][0]
+		hh,mm,ss = TT.DectoHHMM(ut,ss=True,Split=True)
+		ax.set_title('{:08d} {:02d}:{:02d}:{:02d} UT, Bin {:d}'.format(Date,hh,mm,ss,Bin))			
+				
+		return ax
+						
+		
+	def PlotSpectrum2D(self,ut,Method='nearest',Maxdt=60.0,xparam='E',zparam='Flux',
+		fig=None,maps=[1,1,0,0],xlog=None,zlog=None,nox=False,noy=False,
+		scale=None,cmap='gnuplot'):	
+		'''
+		This method will plot a spectrum from a given time.
+		
+		Inputs
+		======
+		Date : int
+			Date in format yyyymmdd
+		ut : float
+			Time in hours since beginning of the day
+		Method : str
+			'nearest'|'interpolate' - will find the nearest spectrum to
+			the time specified time, or will interpolate between two 
+			surrounding spectra.
+		Maxdt : float
+			Maximum difference in time between the specified time and the
+			time of the spectra in seconds.
+		Split : bool
+			If True, the spectra will be returned as a list, if False,
+			they will be combined to form a single spectrum.
+		PSD : bool
+			If True then phase space density will be plotted
+		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
+			If None - a new plot is created
+			If an instance of pyplot then a new Axes is created on an existing plot
+			If Axes instance, then plotting is done on existing Axes
+		maps : list
+			[xmaps,ymaps,xmap,ymap] controls position of subplot
+		xlog : bool
+			if True, x-axis is logarithmic
+		ylog : bool
+			If True, y-axis is logarithmic
+		FitMaxwellian : bool or str
+			If True - the PSD will be used to fit a Maxwellian 
+			distribution, if 'counts' then the counts will be used 
+			instead.
+		FitKappa : bool or str
+			If True - the PSD will be used to fit a Kappa
+			distribution, if 'counts' then the counts will be used 
+			instead.			
 		
 				
-		# '''	
+		'''	
 		
-		# #get the spectra
-		# energy,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,Split,PSD)
+		#get the spectra
+		x,y,z,xlabel,ylabel,zlabel = self.GetSpectrum2D(ut,Method,Maxdt,xparam,zparam)
+		ye = np.append(y[1],y[2][-1])
 		
+		#create the figure
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+		else:
+			ax = fig	
+			
+		#get the yparameter stuff
+		if xparam == 'E':
+			if xlog is None:
+				xlog = self._elog
+			ax.set_xlim(self._elim)
+			x0 = x[1]
+			x1 = x[2]
+			ax.set_xlabel(self.elabel)
+		elif xparam == 'V':
+			if xlog is None:
+				xlog = self._vlog
+			ax.set_xlim(self._vlim)
+			x0 = x[1]
+			x1 = x[2]
+			ax.set_xlabel(self.vlabel)
+		else:
+			return		
+				
+		if xlog:
+			ax.set_xscale('log')
+			
+		ax.set_ylabel(self.alabel)
+	
+		#turn axes off when needed
+		if nox:
+			ax.set_xlabel('')
+			ax.xaxis.set_ticks([])
+		if noy:
+			ax.set_ylabel('')
+			ax.yaxis.set_ticks([])
+
+		#get z stuff
+		if zparam == 'Flux':
+			zlabel = self.flabel
+			if zlog is None:
+				zlog = self._flog
+			if scale is None:
+				scale = self._scale
+		elif zparam == 'PSD':
+			zlabel = self.plabel
+			if zlog is None:
+				zlog = self._plog
+			if scale is None:
+				scale = self._psdscale
+			
+		#get color scale
+		if zlog:
+			norm = colors.LogNorm()
+		else:
+			norm = colors.Normalize()
+	
+		for i in range(0,x[0].size):				
+			xtmp = np.array([x0[i],x1[i]])
+			if np.isfinite(xtmp).all():
+				#plot each row of energy/velocity
+				xg,yg = np.meshgrid(xtmp,ye)
+				
+				ztmp = np.array([z[i]])
+				
+				sm = ax.pcolormesh(xg,yg,ztmp.T,cmap=cmap,norm=norm,vmin=scale[0],vmax=scale[1])
 		
-		# #create the figure
-		# if fig is None:
-			# fig = plt
-			# fig.figure()
-		# if hasattr(fig,'Axes'):	
-			# ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
-		# else:
-			# ax = fig	
-			
-		# #plot
-		# if Split:
-			# if not color is None:
-				# nc = len(color)
-			# for i in range(0,len(spec)):
-				# if color is None:
-					# ax.plot(energy[i],spec[i],label=labs[i],marker='.')
-				# else:
-					# ax.plot(energy[i],spec[i],color=color[i % nc],label=labs[i],marker='.')
-			
-		# else:
-			# ax.plot(energy,spec,color=color,marker='.')
+		#colorbar
+		divider = make_axes_locatable(ax)
+		cax = divider.append_axes("right", size="2.5%", pad=0.05)
 
-		# #set the x-axis scale
-		# if xlog is None:
-			# xlog = self._ylog
-		# if xlog:
-			# ax.set_xscale('log')
+		cbar = fig.colorbar(sm,cax=cax) 
+		cbar.set_label(zlabel)		
 		
-		# #set the y-axis scale
-		# if ylog is None:
-			# ylog = self._zlog
-		# if ylog:
-			# ax.set_yscale('log')
-			
-		# #set the axis labels
-		# if PSD:
-			# ax.set_xlabel('V (m s$^{-1}$)')
-			# ax.set_ylabel('PSD (s$^3$ m$^{-6}$)')
-		# else:
-			# ax.set_xlabel(self.ylabel)
-			# ax.set_ylabel(self.zlabel)
-			
-		# #turn axes off when needed
-		# if nox:
-			# ax.set_xlabel('')
-			# ax.xaxis.set_ticks([])
-		# if noy:
-			# ax.set_ylabel('')
-			# ax.yaxis.set_ticks([])
-
-
-		# if (not FitKappa is False) or (not FitMaxwellian is False):
-			# ylim = ax.get_ylim()
-			# ax.set_ylim(ylim)
-			
-			
-			# #get the combined spectra
-			# v,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,False,True)
-			# e = 1.6022e-19
-			# E = 0.5*self.Mass*(v**2)/(e*1000)
-			
-			# #convert to counts
-			# C = PSDtoCounts(v,spec,self.Mass)
-
-			# #fit spectrum
-			# if (not FitKappa is False):
-				# if FitKappa is 'counts':
-					# nk,Tk,K,statk = FitKappaDistCts(v,C,1.0e5,1.0e6,self.Mass,Verbose=True)
-				# else:
-					# nk,Tk,K,statk = FitKappaDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
-				# fk = KappaDist(nk,v,Tk,self.Mass,K)
-				# if not PSD:
-					# fk = PSDtoFlux(v,fk,self.Mass)
-					# ax.plot(E,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
-				# else:
-					# ax.plot(v,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
-			# if (not FitMaxwellian is False):
-				# if FitMaxwellian is 'counts':
-					# nm,Tm,statm = FitMaxwellianDistCts(v,C,1.0e5,1.0e6,self.Mass)
-				# else:
-					# nm,Tm,statm = FitMaxwellianDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
-				# fm = MaxwellBoltzmannDist(nm,v,Tm,self.Mass)
-				# if not PSD:
-					# fm = PSDtoFlux(v,fm,self.Mass)
-					# ax.plot(E,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
-				# else:
-					# ax.plot(v,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
-
-		# ax.legend(fontsize=8)
-			
-		# return ax
+		#get the title
+		Date = mode(self.Date)[0][0]
+		hh,mm,ss = TT.DectoHHMM(ut,ss=True,Split=True)
+		ax.set_title('{:08d} {:02d}:{:02d}:{:02d} UT'.format(Date,hh,mm,ss))	
+						
+		return ax
 				
 		
 	def PlotSpectrogram(self,Bin,ut=None,fig=None,maps=[1,1,0,0],
@@ -494,7 +652,7 @@ class PSpecPADCls(object):
 		elif yparam == 'V':
 			title = r'$\alpha$ Bin {:d} ({:4.1f} - {:4.1f}'.format(Bin,self.Alpha[Bin],self.Alpha[Bin+1])+'$^{\circ}$)'
 			if ylog is None:
-				ylog = self._elog
+				ylog = self._vlog
 			ax.set_ylim(self._vlim)
 			y0 = self.V0
 			y1 = self.V1

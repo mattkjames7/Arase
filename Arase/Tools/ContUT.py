@@ -6,6 +6,10 @@ def ContUT(Date,ut):
 	'''
 	Calculate the continuous ut array
 	'''
+	if np.size(Date) == 1:
+		Date = np.array([Date]).flatten()
+		ut = np.array([ut]).flatten()
+	
 	utc = copy.deepcopy(ut).astype('float64')
 	
 	ud = np.unique(Date)
