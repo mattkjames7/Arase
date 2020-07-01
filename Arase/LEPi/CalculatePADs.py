@@ -17,39 +17,36 @@ def CalculatePADs(Date,na=18,Verbose=True):
 	
 
 	#calculate alpha
-	alphaL,alphaH = GetPitchAngle(Date,data=data)
+	alpha = GetPitchAngle(Date,data=data)
 
 	#list the fields used for high and low parts of the data
-	fields = { 	'eFluxL' : ('Epoch_L','FEDU_L_Energy','FEDU_L',alphaL,'sctno_L'),
-				'eFluxH' : ('Epoch_H','FEDU_H_Energy','FEDU_H',alphaH,'sctno_H')}
+	fields = { 	'H+Flux' : ('FPDU_Energy','FPEDU'),
+				'He+Flux' : ('FHEDU_Energy','FHEEDU'),
+				'O+Flux' : ('FODU_Energy','FOEDU')}
 	
 	#loop through them both
 	for ff in list(fields.keys()):
 		print(ff)
-		ftime,fenergy,fflux,alpha,fsect =  fields[ff]
-		
-		#find sector start and end times
-		sect = data[fsect]
-		i0 = np.where(sect == 0)[0]
-		i1 = np.where(sect == 15)[0] + 1
-		ni = i0.size
-		
-		#combine epochs
-		epoch = data[ftime][i0] + 4000000000
+		fenergy,fflux =  fields[ff]
 		
 	
 		#determine the size of the output arrays
-		nt = ni
-		ne = data[fenergy].shape[1]
+		nt = data['Epoch'].size
+		ne = data[fenergy].size
 		
 		#get the dates/times
-		Date,ut = CDFEpochToUT(epoch)
+		Date,ut = CDFEpochToUT(data['Epoch'])
 		utc = ContUT(Date,ut)
 		
 		#get the energy arrays (shape: (nt,ne))
-		EMin = data[fenergy][0,:]
-		EMax = data[fenergy][1,:]
-		Emid = 10.0**(0.5*(np.log10(EMin) + np.log10(EMax)))
+		Emid = data[fenergy]
+		lE = np.log10(Emid)
+		dE = np.abs(lE[1:] - lE[:-1])
+		lEmin = np.append(lE[0]-dE[0]/2.0,lE[1:]-dE/2.0)
+		lEmax = np.append(lE[:-1]+dE/2.0,lE[-1]+dE[-1]/2.0,)
+
+		EMin = 10**lEmin
+		EMax = 10**lEmax
 		
 		#get the alpha limits
 		Alpha = np.linspace(0.0,180.0,na+1)
@@ -62,15 +59,12 @@ def CalculatePADs(Date,na=18,Verbose=True):
 		FLUX = data[fflux]
 		bad = np.where(FLUX <= 0)
 		FLUX[bad] = np.nan
-		for i in range(0,Emid.size):
-			FLUX[:,i,:] = FLUX[:,i,:]*Emid[i]
-		
 		for i in range(0,nt):
 			if Verbose:
 				print('\r{:6.2f}%'.format(100.0*(i+1)/nt),end='')
 			for j in range(0,ne):
-				a = alpha[i0[i]:i1[i]].flatten()
-				f = FLUX[i0[i]:i1[i],j].flatten()
+				a = alpha[i].flatten()
+				f = FLUX[i,j].flatten()
 				good = np.where(np.isfinite(f))[0]
 				if good.size > 0:
 					flux[i,j],_,_ = binned_statistic(a[good],f[good],statistic='mean',bins=Alpha)

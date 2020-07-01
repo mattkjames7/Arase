@@ -69,8 +69,8 @@ def ReadOmni(Date):
 		sEnergyH = data['FEDO_H_Energy']
 		
 		#get the midpoints
-		eL = np.mean(sEnergyL,axis=0)
-		eH = np.mean(sEnergyH,axis=0)
+		eL = 10**np.mean(np.log10(sEnergyL),axis=0)
+		eH = 10**np.mean(np.log10(sEnergyH),axis=0)
 		
 		#replace bad data
 		L = data['FEDO_L']
@@ -81,9 +81,13 @@ def ReadOmni(Date):
 		bad = np.where(H < 0)
 		H[bad] = np.nan
 		
+		#convert to diff energy flux
+		L = L*eL
+		H = H*eH
+		
 		#labels
-		zlabelH = 'Omni-directional flux of HEP-H (1/keV-sr-s-cm$^2$)'
-		zlabelL = 'Omni-directional flux of HEP-L (1/keV-sr-s-cm$^2$)'
+		zlabelH = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
+		zlabelL = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
 		ylabelH = 'Energy (keV)'
 		ylabelL = 'Energy (keV)'
 		

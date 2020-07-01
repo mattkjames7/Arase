@@ -67,9 +67,9 @@ def ReadOmni(Date):
 
 
 		#replace bad data
-		fields = {	'FPDO' : 	('H+','Energy (keV)',r'Omni H$^+$ flux (1/keV-sr-s-cm$^2$)','H'),
-					'FHEDO' : 	('He+','Energy (keV)',r'Omni He$^+$ flux (1/keV-sr-s-cm$^2$)','He'),
-					'FODO' : 	('O+','Energy (keV)',r'Omni O$^+$ flux (1/keV-sr-s-cm$^2$)','O'),}
+		fields = {	'FPDO' : 	('H+','Energy (keV)',r'H$^+$ flux (keV/(s cm$^{2}$ sr keV))','H'),
+					'FHEDO' : 	('He+','Energy (keV)',r'He$^+$ flux (keV/(s cm$^{2}$ sr keV))','He'),
+					'FODO' : 	('O+','Energy (keV)',r'O$^+$ flux (keV/(s cm$^{2}$ sr keV))','O'),}
 		
 		for k in list(fields.keys()):
 			s = data[k]
@@ -87,6 +87,9 @@ def ReadOmni(Date):
 			
 			#get the energy bins
 			ke = data[ke_cdf]
+			
+			#convert spectra to energy flux
+			kspec = kspec*ke
 			
 			#now to store the spectra
 			if out[kspec] is None:

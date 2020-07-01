@@ -1,5 +1,5 @@
 import numpy as np
-from ._ReadCDF import _ReadCDF
+from .ReadCDF import ReadCDF
 from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
@@ -49,7 +49,7 @@ def ReadOmni(Date):
 	for date in dates:					
 		
 		#read the CDF file
-		data,meta = _ReadCDF(date,2,'omniflux')		
+		data,meta = ReadCDF(date,2,'omniflux')		
 		
 
 		if data is None:
@@ -64,8 +64,8 @@ def ReadOmni(Date):
 		sEnergyGSO = data['FEDO_GSO_Energy']
 		
 		#get the midpoints
-		essd = np.mean(sEnergySSD,axis=0)
-		egso = np.mean(sEnergyGSO,axis=0)
+		essd = 10**np.mean(np.log10(sEnergySSD),axis=0)
+		egso = 10**np.mean(np.log10(sEnergyGSO),axis=0)
 		
 		#replace bad data
 		ssd = data['FEDO_SSD']
@@ -76,10 +76,14 @@ def ReadOmni(Date):
 		bad = np.where(gso < 0)
 		gso[bad] = np.nan
 		
+		#convert
+		ssd = ssd*essd
+		gso = gso*egso
+		
 		#plot labels
-		zlabelS = 'Omni-directional flux of XEP SSD (1/keV-sr-s-cm$^2$)'
+		zlabelS = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
 		ylabelS = 'Energy (keV)'
-		zlabelG = 'Omni-directional flux of XEP GSO (1/keV-sr-s-cm$^2$)'
+		zlabelG = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
 		ylabelG = 'Energy (keV)'
 		
 		

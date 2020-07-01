@@ -682,9 +682,9 @@ class PSpecPADCls(object):
 		#get z stuff
 		if zparam == 'Flux':
 			if yparam == 'alpha':
-				z = self.Flux[:,:,Bin]
-			else:
 				z = self.Flux[:,Bin,:]
+			else:
+				z = self.Flux[:,:,Bin]
 			
 			zlabel = self.flabel
 			if zlog is None:
@@ -693,9 +693,9 @@ class PSpecPADCls(object):
 				scale = self._scale
 		elif zparam == 'PSD':
 			if yparam == 'alpha':
-				z = self.PSD[:,:,Bin]
-			else:
 				z = self.PSD[:,Bin,:]
+			else:
+				z = self.PSD[:,:,Bin]
 			zlabel = self.plabel
 			if zlog is None:
 				zlog = self._plog
@@ -770,7 +770,6 @@ class PSpecPADCls(object):
 				if np.isfinite(etmp).all():
 					#plot each row of energy
 					tg,eg = np.meshgrid(ttmp,etmp)
-					
 					s = np.array([st[:,j]])
 					
 					sm = ax.pcolormesh(tg,eg,s,cmap=cmap,norm=norm,vmin=scale[0],vmax=scale[1])

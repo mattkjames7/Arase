@@ -8,19 +8,20 @@ from ..Tools.CalculatePitchAngles import CalculatePitchAngles
 from ..MGF.InterpObj import InterpObj
 
 
-def GetPitchAngle(Date):
+def GetPitchAngle(Date,data=None):
 	'''
 	Recreating the pitch angles seems to be a little dodgy.
 	'''
 	
 	#read in the 3dflux level 2 data
-	data2,meta2 = Read3D(Date)
+	if data is None:
+		data,meta = Read3D(Date)
 	
 	#get the elevation/angle data
-	angles = data2['FIDU_Angle_gse']*np.pi/180.0
+	angles = data['FIDU_Angle_gse']*np.pi/180.0
 	
 	#get the time and date
-	date,time = CDFEpochToUT(data2['Epoch'])
+	date,time = CDFEpochToUT(data['Epoch'])
 		
 	#call the function to retrieve pitch angles
 	alpha = CalculatePitchAngles(date,time,angles,None)

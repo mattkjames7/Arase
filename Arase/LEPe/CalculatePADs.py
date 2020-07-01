@@ -25,8 +25,9 @@ def CalculatePADs(Date,na=18,Verbose=True):
 	utc = ContUT(Date,ut)
 	
 	#get the energy arrays (shape: (nt,ne))
-	EMin = data['FEDU_Energy'][:,0,:]
-	EMax = data['FEDU_Energy'][:,1,:]
+	EMin = data['FEDU_Energy'][:,0,:]/1000.0
+	EMax = data['FEDU_Energy'][:,1,:]/1000.0
+	Emid = 10.0**(0.5*(np.log10(EMin) + np.log10(EMax)))
 	
 	#get the alpha limits
 	Alpha = np.linspace(0.0,180.0,na+1)
@@ -36,9 +37,11 @@ def CalculatePADs(Date,na=18,Verbose=True):
 	
 	
 	#loop through each dimension (slow!)
-	FLUX = data['FEDU']
+	FLUX = data['FEDU']*1000.0
 	bad = np.where(FLUX <= 0)
 	FLUX[bad] = np.nan
+	FLUX = FLUX*Emid.reshape(Emid.shape + (1,1))
+		
 	for i in range(0,nt):
 		if Verbose:
 			print('\r{:6.2f}%'.format(100.0*(i+1)/nt),end='')

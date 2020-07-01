@@ -63,7 +63,7 @@ def ReadOmni(Date,KeV=True):
 		sEnergy = data['FEDO_Energy']
 		if KeV:
 			sEnergy = sEnergy/1000.0
-		emid = np.mean(sEnergy,axis=1)
+		emid = 10**np.mean(np.log10(sEnergy),axis=1)
 		ew = sEnergy[:,1,:] - sEnergy[:,0,:]
 
 
@@ -76,13 +76,15 @@ def ReadOmni(Date,KeV=True):
 		
 			#plot labels
 			ylabel = 'Energy (keV)'
-			zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2}$-sr$^{-1}$ KeV$^{-1}$)'
+			zlabel = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
 		else:
 			
 			#plot labels
 			ylabel = 'Energy (eV)'
-			zlabel = 'Omni-directional number flux (s$^{-1}$ cm$^{-2$-sr$^{-1}$ eV$^{-1}$)'
+			zlabel = 'Energy Flux (keV/(s cm$^{2}$ sr eV))'
 		
+		#convert to differential energy flux
+		s = s*emid
 		
 		#now to store the spectra
 		if out['eFlux'] is None:
