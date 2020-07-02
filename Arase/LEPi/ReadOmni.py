@@ -89,7 +89,7 @@ def ReadOmni(Date):
 			ke = data[ke_cdf]
 			
 			#convert spectra to energy flux
-			kspec = kspec*ke
+			s = s*ke
 			
 			#now to store the spectra
 			if out[kspec] is None:

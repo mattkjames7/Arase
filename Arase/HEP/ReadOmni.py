@@ -86,8 +86,8 @@ def ReadOmni(Date):
 		H = H*eH
 		
 		#labels
-		zlabelH = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
-		zlabelL = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
+		zlabelH = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
+		zlabelL = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
 		ylabelH = 'Energy (keV)'
 		ylabelL = 'Energy (keV)'
 		

@@ -81,9 +81,9 @@ def ReadOmni(Date):
 		gso = gso*egso
 		
 		#plot labels
-		zlabelS = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
+		zlabelS = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
 		ylabelS = 'Energy (keV)'
-		zlabelG = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
+		zlabelG = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
 		ylabelG = 'Energy (keV)'
 		
 		

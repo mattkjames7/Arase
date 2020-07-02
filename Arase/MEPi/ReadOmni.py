@@ -89,7 +89,7 @@ def ReadOmni(Date):
 	for date in dates:	
 				
 		#read the CDF file
-		data,meta = _ReadCDF(date,2,'omniflux')		
+		data,meta = ReadCDF(date,2,'omniflux')		
 
 		if data is None:
 			continue

@@ -74,7 +74,7 @@ def ReadOmni(Date):
 		
 		#plot labels
 		ylabel = 'Energy (keV)'
-		zlabel = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
+		zlabel = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
 		
 		
 		#now to store the spectra

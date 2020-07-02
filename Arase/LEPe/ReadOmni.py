@@ -76,12 +76,12 @@ def ReadOmni(Date,KeV=True):
 		
 			#plot labels
 			ylabel = 'Energy (keV)'
-			zlabel = 'Energy Flux (keV/(s cm$^{2}$ sr keV))'
+			zlabel = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
 		else:
 			
 			#plot labels
 			ylabel = 'Energy (eV)'
-			zlabel = 'Energy Flux (keV/(s cm$^{2}$ sr eV))'
+			zlabel = 'Energy Flux\n(keV/(s cm$^{2}$ sr eV))'
 		
 		#convert to differential energy flux
 		s = s*emid
