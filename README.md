@@ -27,19 +27,18 @@ Most instrument data can be downloaded using the `DownloadData` function
 contained in the instruments submodule, e.g.:
 
 ```python
-Arase.XXX.DownloadData(L,prod,StartYear=StartYear,EndYear=EndYear,Overwrite=Overwrite)
+Arase.XXX.DownloadData(L,prod,Date=Date,Overwrite=Overwrite)
 ```
 
 where `XXX` can be replaced with the instrument names: `HEP`, `LEPe`, `LEPi`, `MEPe`, `MEPi`, 
 `MGF` or `XEP`. `L` is an integer and `prod` is a string which correspond to the
 level and data product provided by the instrument, repsectively (see the table in "Current
-Progress"). `StartYear` and `EndYear` determine the range of years to download data for.
-`Overwrite` will force the routine to overwrite existing data.
+Progress"). `Date` determines the range of dates to download data for.  The `Date` keyword can be a single date, a list of specific dates to download, or a 2 element list defining the start and end dates (by default `Date = [20170101,20200101]`). `Overwrite` will force the routine to overwrite existing data.
 
 This method will work for PWE data:
 
 ```python
-Arase.PWE.DownloadData(subcomp,L,prod,StartYear=StartYear,EndYear=EndYear,Overwrite=Overwrite)
+Arase.PWE.DownloadData(subcomp,L,prod,Date=Date,Overwrite=Overwrite)
 ```
 
 where `subcomp` is the sub-component of the instrument (see table below).
@@ -47,7 +46,7 @@ where `subcomp` is the sub-component of the instrument (see table below).
 To download the position data:
 
 ```python
-Arase.Pos.DownloadData(prod,StartYear=StartYear,EndYear=EndYear,Overwrite=Overwrite)
+Arase.Pos.DownloadData(prod,Date=Date,Overwrite=Overwrite)
 ```
 
 where prod is either `'l3'` or `'def'`. The `'def'` option is needed for
@@ -97,7 +96,7 @@ tr = Arase.Pos.ReadFieldTraces(Date)
 data = Arase.MGF.ReadMGF(Date)
 ```
 
-This returns a `numpy.recarray` object which contains the time-series data.
+This returns a `numpy.recarray` object which contains the time-series data. The `Date` argument may be a single date, a list of dates or a 2 element `list` of dates defining the start and end date to load. 
 
 ### Particle Omni-directional Spectra 
 
@@ -107,9 +106,9 @@ data = Arase.LEPe.ReadOmni(Date)
 
 For other instruments, replace `LEPe` with one of the following: `LEPi`,
 `MEPe`, `MEPi`, `HEP` or `XEP`. `data` is a dictionary which will contain
-dates, times, energy bins and instances of the `SpecCls` object. The `SpecCls`
+dates, times, energy bins and instances of the `Arase.Tools.PSpecCls` object. The `PSpecCls`
 object contains all of the spectral information stored within it, and is 
-usually identified by the dictionary key containing `'Flux'`. The `SpecCls`
+usually identified by the dictionary key containing `'Flux'`. The `PSpecCls`
 object has an in-built method for plotting the spectrograms, e.g.:
 
 ```python
@@ -118,18 +117,6 @@ data['eFlux'].Plot()
 
 will plot the electron flux spectrogram from the LEPe data loaded above. 
 To list the keys of a dictionary, use `list(data.keys())`
-
-###	3D Particle Spectra
-
-These data are not currently placed into an object like `SpecCls`, this
-may change once I have access to PAD data. For instruments which provide 3D spectra,
-there is a function `Read3D` which will simply read the CDF file for a
-given date, and list all of the data and corresponding metadata into
-two dictionarys, e.g.:
-
-```python
-data,meta = Arase.LEPe.Read3D(Date)
-```
 
 ### Combined Particle Spectra
 
@@ -147,6 +134,7 @@ and for ions:
 ```python
 H,He,O = Arase.Ions.ReadOmni(Date)
 ```
+
 where `E`, `H`, `He` and `O` are all instances of `SpecCls`. 
 
 ![alt text](Electrons.png)
@@ -181,31 +169,96 @@ spec.PlotSpectrum?
 
 ![](Spectrum.png)
 
+
+
+
+
+###	3D Particle Spectra
+
+These data are not currently placed into an object like `PSpecCls`, for instruments which provide 3D spectra, there is a function `Read3D` which will simply read the CDF file for a given date, and list all of the data and corresponding metadata into
+two dictionaries, e.g.:
+
+```python
+data,meta = Arase.LEPe.Read3D(Date)
+```
+
+
+
+### Pitch Angle Distributions
+
+For particle instruments with 3D flux data, there is a method to convert these to pitch angle distributions (PADs). The PADs are calculated using the MGF data and the elevation/azimuth angles of the instruments in GSE coordinates where provided in the level 2 `3dflux` data products. It was possible to compare this mehod to the angles provided by the level 3 `3dflux` product from the MEPe instrument and almost all pitch angles were within about 1-2 degrees. **WARNING: these data should be used with caution - they may not be correct.** 
+
+To store the PADs:
+
+```python
+import Arase
+Arase.LEPe.SavePADs(Date,na=18,Overwrite=False,DownloadMissingData=True,DeleteNewData=True,Verbose=True)
+```
+
+The above code will bin up the 3D LEPe fluxes from a single date into `na` pitch angle bins (always in the range 0 to 180 degrees). The `Overwrite` keyword will force the overwriting of previously created PAD files. `DownloadMissingData` will download any missing `3dflux` data and MGF data. `DeleteNewData` will delete the newly downloaded `3dflux` data after creating the PAD data because some of the `3dflux` files are > 500 MB.
+
+To read PADs:
+
+```python
+pad = Arase.LEPe.ReadPAD(Date,SpecType,ReturnSpecObject=True)
+```
+
+This will read the PAD spectra from a single date for a given SpecType (e.g. `'eFlux'` or `'H+Flux'`, depending on the instrument). The returned object will either be a `dict` containing just the data if `ReturnSpecObject=False`, or a `Arase.Tools.PSpecPADCls` object if  `ReturnSpecObject=True`. The `PSpecPADCls` object allows the plotting of spectrograms, 1D spectra and 2D spectra.
+
+For a spectrogram of a specific pitch angle bin:
+
+```python
+pad = Arase.MEPe.ReadPAD(20180101,'eFlux')
+pad.PlotSpectrogram(Bin=5)
+```
+
+![PADSpectrogram.png](PADSpectrogram.png)
+
+
+
+Or a 1D spectrum
+
+```python
+pad.PlotSpectrum1D(12.0,Bin=5,xparam='V',yparam='PSD')
+```
+
+![PAD1DSpectrum](PAD1DSpectrum.png)
+
+Or a 2D spectrum:
+
+```python
+pad.PlotSpectrum2D(12.0,xparam='V',zparam='PSD')
+```
+
+![PAD2DSpectrum](PAD2DSpectrum.png)
+
+
+
 ## Current progress
 
 
-| Instrument | Subcomponent | Level    | Product  | Download | Read     | Plot     |
-|:----------:|:------------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| HEP        |              | 2        | omniflux | &#10004; | &#10004; | &#10004; |
-| LEPe       |              | 2        | omniflux | &#10004; | &#10004; | &#10004; |
-| LEPe       |              | 2        | 3dflux   | &#10004; | &#10033; | &#10006; |
-| LEPi       |              | 2        | omniflux | &#10004; | &#10004; | &#10004; |
-| LEPi       |              | 2        | 3dflux   | &#10004; | &#10033; | &#10006; |
-| MEPe       |              | 2        | omniflux | &#10004; | &#10004; | &#10004; |
-| MEPe       |              | 2        | 3dflux   | &#10004; | &#10033; | &#10033; |
-| MEPe       |              | 3        | 3dflux   | &#10013; | &#10033; | &#10006; |
-| MEPi       |              | 2        | omniflux | &#10004; | &#10004; | &#10004; |
-| MEPi       |              | 2        | 3dflux   | &#10004; | &#10033; | &#10004; |
-| MEPi       |              | 3        | 3dflux   | &#10013; | &#10033; | &#10006; |
-| MGF        |              | 2        | 8sec     | &#10004; | &#10004; | &#10006; |
-| PWE        | efd          | 2        | spec     | &#10004; | &#10004; | &#10004; |
-| PWE        | hfa          | 2        | high     | &#10004; | &#10004; | &#10004; |
-| PWE        | hfa          | 2        | low      | &#10004; | &#10004; | &#10004; |
-| PWE        | hfa          | 3        |          | &#10013; | &#10004; | &#10006; |
-| PWE        | ofa          | 2        | complex  | &#10013; | &#10006; | &#10006; |
-| PWE        | ofa          | 2        | matrix   | &#10013; | &#10006; | &#10006; |
-| PWE        | ofa          | 2        | spec     | &#10004; | &#10006; | &#10006; |
-| XEP        |              | 2        | omniflux | &#10004; | &#10004; | &#10004; |
+| Instrument | Subcomponent | Level | Product  | Download |   Read   |   Plot   |
+| :--------: | :----------: | :---: | :------: | :------: | :------: | :------: |
+|    HEP     |              |   2   | omniflux | &#10004; | &#10004; | &#10004; |
+|    LEPe    |              |   2   | omniflux | &#10004; | &#10004; | &#10004; |
+|    LEPe    |              |   2   |  3dflux  | &#10004; | &#10033; | &#10006; |
+|    LEPi    |              |   2   | omniflux | &#10004; | &#10004; | &#10004; |
+|    LEPi    |              |   2   |  3dflux  | &#10004; | &#10033; | &#10006; |
+|    MEPe    |              |   2   | omniflux | &#10004; | &#10004; | &#10004; |
+|    MEPe    |              |   2   |  3dflux  | &#10004; | &#10033; | &#10033; |
+|    MEPe    |              |   3   |  3dflux  | &#10004; | &#10033; | &#10006; |
+|    MEPi    |              |   2   | omniflux | &#10004; | &#10004; | &#10004; |
+|    MEPi    |              |   2   |  3dflux  | &#10004; | &#10033; | &#10004; |
+|    MEPi    |              |   3   |  3dflux  | &#10004; | &#10033; | &#10006; |
+|    MGF     |              |   2   |   8sec   | &#10004; | &#10004; | &#10006; |
+|    PWE     |     efd      |   2   |   spec   | &#10004; | &#10004; | &#10004; |
+|    PWE     |     hfa      |   2   |   high   | &#10004; | &#10004; | &#10004; |
+|    PWE     |     hfa      |   2   |   low    | &#10004; | &#10004; | &#10004; |
+|    PWE     |     hfa      |   3   |          | &#10004; | &#10004; | &#10006; |
+|    PWE     |     ofa      |   2   | complex  | &#10013; | &#10006; | &#10006; |
+|    PWE     |     ofa      |   2   |  matrix  | &#10013; | &#10006; | &#10006; |
+|    PWE     |     ofa      |   2   |   spec   | &#10004; | &#10006; | &#10006; |
+|    XEP     |              |   2   | omniflux | &#10004; | &#10004; | &#10004; |
 
 * &#10004; - Works
 * &#10006; - Not working yet. In the case of 3D data, a `SpecCls3D` object needs to be written. For MGF and level 3 hfa data, it's a simple case of plotting a line.
