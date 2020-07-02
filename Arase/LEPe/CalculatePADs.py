@@ -64,7 +64,6 @@ def CalculatePADs(Date,na=18,Verbose=True):
 	FLUX = data['FEDU']*1000.0
 	bad = np.where(FLUX <= 0)
 	FLUX[bad] = np.nan
-	FLUX = FLUX*Emid.reshape(Emid.shape + (1,1))
 		
 	for i in range(0,nt):
 		if Verbose:

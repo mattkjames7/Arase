@@ -71,14 +71,11 @@ def ReadOmni(Date):
 		bad = np.where(gso < 0)
 		gso[bad] = np.nan
 		
-		#convert
-		ssd = ssd*essd
-		gso = gso*egso
 		
 		#plot labels
-		zlabelS = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
+		zlabelS = 'Flux\n((s cm$^{2}$ sr keV)$^{-1}$)'
 		ylabelS = 'Energy (keV)'
-		zlabelG = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
+		zlabelG = 'Flux\n((s cm$^{2}$ sr keV)$^{-1}$)'
 		ylabelG = 'Energy (keV)'
 		
 		

@@ -88,8 +88,7 @@ def CalculatePADs(Date,na=18,Verbose=True):
 		FLUX = data[fflux]
 		bad = np.where(FLUX <= 0)
 		FLUX[bad] = np.nan
-		for i in range(0,Emid.size):
-			FLUX[:,i,:] = FLUX[:,i,:]*Emid[i]
+
 		
 		for i in range(0,nt):
 			if Verbose:

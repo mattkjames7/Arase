@@ -72,16 +72,14 @@ def ReadOmni(Date,KeV=True):
 		
 			#plot labels
 			ylabel = 'Energy (keV)'
-			zlabel = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
+			zlabel = 'Flux\n((s cm$^{2}$ sr keV)$^{-1}$)'
 		else:
 			
 			#plot labels
 			ylabel = 'Energy (eV)'
-			zlabel = 'Energy Flux\n(keV/(s cm$^{2}$ sr eV))'
+			zlabel = 'Flux\n((s cm$^{2}$ sr keV)$^{-1}$)'
 		
-		#convert to differential energy flux
-		s = s*emid
-		
+
 		#now to store the spectra
 		if out['eFlux'] is None:
 			out['eFlux'] = PSpecCls(SpecType='e',ylabel=ylabel,zlabel=zlabel,ylog=True,zlog=True)

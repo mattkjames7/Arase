@@ -44,9 +44,9 @@ def CalculatePADs(Date,na=18,Verbose=True):
 	alpha = GetPitchAngle(Date,data=data)
 
 	#list the fields used for high and low parts of the data
-	fields = { 	'H+Flux' : ('FPDU_Energy','FPEDU'),
-				'He+Flux' : ('FHEDU_Energy','FHEEDU'),
-				'O+Flux' : ('FODU_Energy','FOEDU')}
+	fields = { 	'H+Flux' : ('FPDU_Energy','FPDU'),
+				'He+Flux' : ('FHEDU_Energy','FHEDU'),
+				'O+Flux' : ('FODU_Energy','FODU')}
 	
 	#loop through them both
 	for ff in list(fields.keys()):

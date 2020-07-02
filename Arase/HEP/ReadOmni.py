@@ -71,14 +71,11 @@ def ReadOmni(Date):
 		H = data['FEDO_H']
 		bad = np.where(H < 0)
 		H[bad] = np.nan
-		
-		#convert to diff energy flux
-		L = L*eL
-		H = H*eH
+
 		
 		#labels
-		zlabelH = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
-		zlabelL = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
+		zlabelH = 'Flux\n((s cm$^{2}$ sr keV)$^{-1}$)'
+		zlabelL = 'Flux\n((s cm$^{2}$ sr keV)$^{-1}$)'
 		ylabelH = 'Energy (keV)'
 		ylabelL = 'Energy (keV)'
 		

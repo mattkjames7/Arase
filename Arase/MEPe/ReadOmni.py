@@ -65,12 +65,11 @@ def ReadOmni(Date):
 		bad = np.where(s < 0)
 		s[bad] = np.nan
 		
-		#convert to diff. energy flux
-		s = s*sEnergy
+
 		
 		#plot labels
 		ylabel = 'Energy (keV)'
-		zlabel = 'Energy Flux\n(keV/(s cm$^{2}$ sr keV))'
+		zlabel = 'Flux\n((s cm$^{2}$ sr keV)$^{-1}$)'
 		
 		
 		#now to store the spectra

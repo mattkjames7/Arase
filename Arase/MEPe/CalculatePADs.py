@@ -66,7 +66,7 @@ def CalculatePADs(Date,na=18,Verbose=True):
 	
 	
 	#loop through each dimension (slow!)
-	FLUX = data['FEEDU']
+	FLUX = data['FEDU']
 	bad = np.where(FLUX <= 0)
 	FLUX[bad] = np.nan
 	for i in range(0,nt):

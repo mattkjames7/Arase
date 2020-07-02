@@ -64,18 +64,18 @@ def ReadOmni(Date):
 
 
 	#replace bad data
-	fields = {	'FPDO' : 		('H+Flux','Energy (keV/q)','H$^+$ flux (keV/(s cm$^{2}$ sr keV))','H'),
-				'FHE2DO' : 		('He++Flux','Energy (keV/q)','He$^{++}$ flux (keV/(s cm$^{2}$ sr keV))','He'),
-				'FHEDO' : 		('He+Flux','Energy (keV/q)','He$^+$ flux (keV/(s cm$^{2}$ sr keV))','He'),
-				'FOPPDO' : 		('O++Flux','Energy (keV/q)','O$^{++}$ flux (keV/(s cm$^{2}$ sr keV))','O'),
-				'FODO' : 		('O+Flux','Energy (keV/q)','O$^+$ flux (keV/(s cm$^{2}$ sr keV))','O'),
-				'FO2PDO' : 		('O2+Flux','Energy (keV/q)','O$_2^+$ flux (keV/(s cm$^{2}$ sr keV))','O2'),
-				'FPDO_tof' : 	('H+FluxTOF','Energy (keV/q)','H$^+$ Flux for TOF data (keV/(s cm$^{2}$ sr keV))','H'),
-				'FHE2DO_tof' : 	('He++FluxTOF','Energy (keV/q)','He$^{++}$ Flux for TOF data (keV/(s cm$^{2}$ sr keV))','He'),
-				'FHEDO_tof' : 	('He+FluxTOF','Energy (keV/q)','He$^+$ Flux for TOF data (keV/(s cm$^{2}$ sr keV))','He'),
-				'FOPPDO_tof' : 	('O++FluxTOF','Energy (keV/q)','O$^{++}$ Flux for TOF data (keV/(s cm$^{2}$ sr keV))','O'),
-				'FODO_tof' : 	('O+FluxTOF','Energy (keV/q)','O$^+$ Flux for TOF data (keV/(s cm$^{2}$ sr keV))','O'),
-				'FO2PDO_tof' : 	('O2+FluxTOF','Energy (keV/q)','O$_2^+$ Flux for TOF data (keV/(s cm$^{2}$ sr keV))','O2') }
+	fields = {	'FPDO' : 		('H+Flux','Energy (keV/q)','H$^+$ Flux\n((s cm$^{2}$ sr keV)$^{-1}$)','H'),
+				'FHE2DO' : 		('He++Flux','Energy (keV/q)','He$^{++}$ Flux\n((s cm$^{2}$ sr keV)$^{-1}$)','He'),
+				'FHEDO' : 		('He+Flux','Energy (keV/q)','He$^+$ Flux\n((s cm$^{2}$ sr keV)$^{-1}$)','He'),
+				'FOPPDO' : 		('O++Flux','Energy (keV/q)','O$^{++}$ Flux\n((s cm$^{2}$ sr keV)$^{-1}$)','O'),
+				'FODO' : 		('O+Flux','Energy (keV/q)','O$^+$ Flux\n((s cm$^{2}$ sr keV)$^{-1}$)','O'),
+				'FO2PDO' : 		('O2+Flux','Energy (keV/q)','O$_2^+$ Flux\n((s cm$^{2}$ sr keV)$^{-1}$)','O2'),
+				'FPDO_tof' : 	('H+FluxTOF','Energy (keV/q)','H$^+$ Flux for TOF data ((s cm$^{2}$ sr keV)$^{-1}$)','H'),
+				'FHE2DO_tof' : 	('He++FluxTOF','Energy (keV/q)','He$^{++}$ Flux for TOF data ((s cm$^{2}$ sr keV)$^{-1}$)','He'),
+				'FHEDO_tof' : 	('He+FluxTOF','Energy (keV/q)','He$^+$ Flux for TOF data ((s cm$^{2}$ sr keV)$^{-1}$)','He'),
+				'FOPPDO_tof' : 	('O++FluxTOF','Energy (keV/q)','O$^{++}$ Flux for TOF data ((s cm$^{2}$ sr keV)$^{-1}$)','O'),
+				'FODO_tof' : 	('O+FluxTOF','Energy (keV/q)','O$^+$ Flux for TOF data ((s cm$^{2}$ sr keV)$^{-1}$)','O'),
+				'FO2PDO_tof' : 	('O2+FluxTOF','Energy (keV/q)','O$_2^+$ Flux for TOF data ((s cm$^{2}$ sr keV)$^{-1}$)','O2') }
 
 
 	#loop through dates
@@ -102,8 +102,6 @@ def ReadOmni(Date):
 			s = data[k]
 			bad = np.where(s < 0)
 			s[bad] = np.nan
-			
-			s = s*sEnergy
 			
 			field,ylabel,zlabel,spectype = fields[k]
 			
