@@ -350,7 +350,7 @@ class PSpecCls(object):
 		
 	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
 		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False,
-		FitKappa=False,FitMaxwellian=False,nox=False,noy=False):
+		FitKappa=False,FitMaxwellian=False,nox=False,noy=False,Threshold=0.02):
 		'''
 		This method will plot a spectrum from a given time.
 		
@@ -458,16 +458,24 @@ class PSpecCls(object):
 			v,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,False,True)
 			e = 1.6022e-19
 			E = 0.5*self.Mass*(v**2)/(e*1000)
-			
+
 			#convert to counts
 			C = PSDtoCounts(v,spec,self.Mass)
+			
+			#apply the threshold in keV
+			use = np.where(E <= Threshold)[0]
+			v = v[use]
+			E = E[use]
+			C = C[use]
+			spec = spec[use]
+			
 
 			#fit spectrum
 			if (not FitKappa is False):
 				if FitKappa is 'counts':
-					nk,Tk,K,statk = FitKappaDistCts(v,C,1.0e5,1.0e6,self.Mass,Verbose=True)
+					nk,Tk,K,statk = FitKappaDistCts(v,C,1.0e7,1.0e6,self.Mass,Verbose=True)
 				else:
-					nk,Tk,K,statk = FitKappaDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
+					nk,Tk,K,statk = FitKappaDist(v,spec,1.0e7,1.0e6,self.Mass,Verbose=True)
 				fk = KappaDist(nk,v,Tk,self.Mass,K)
 				if not PSD:
 					fk = PSDtoFlux(v,fk,self.Mass)
@@ -476,9 +484,9 @@ class PSpecCls(object):
 					ax.plot(v,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
 			if (not FitMaxwellian is False):
 				if FitMaxwellian is 'counts':
-					nm,Tm,statm = FitMaxwellianDistCts(v,C,1.0e5,1.0e6,self.Mass)
+					nm,Tm,statm = FitMaxwellianDistCts(v,C,1.0e7,1.0e6,self.Mass)
 				else:
-					nm,Tm,statm = FitMaxwellianDist(v,spec,1.0e5,1.0e6,self.Mass,Verbose=True)
+					nm,Tm,statm = FitMaxwellianDist(v,spec,1.0e7,1.0e6,self.Mass,Verbose=True)
 				fm = MaxwellBoltzmannDist(nm,v,Tm,self.Mass)
 				if not PSD:
 					fm = PSDtoFlux(v,fm,self.Mass)
