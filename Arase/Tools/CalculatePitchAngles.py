@@ -6,6 +6,22 @@ def CalculatePitchAngles(Date,ut,angles,mag):
 	'''
 	Calculate the pitch angles for the 3D particle data.
 	
+	Inputs
+	======
+	Date : int
+		Date array
+	ut : flout
+		UT time array (hours from start of day)
+	angles : float
+		Array of instrument azimuths and elevations in GSE coords
+	mag : None or numpy.recarray
+		Set to MGF data array, or None and it will be loaded 
+		automatically
+		
+	Returns
+	=======
+	Estimated pitch angles
+	
 	'''
 	#continuous time axis
 	putc = ContUT(Date,ut)

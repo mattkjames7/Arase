@@ -22,14 +22,6 @@ def ReadHFALow(Date):
 	=======
 	data : dict
 		Contains the following fields:
-		'EpochH' : CDF epoch
-		'DateH' : Date
-		'utH' : UT (hours from beginning of the day)
-		'FH' : Frequency bins
-		'EpochL' : CDF epoch
-		'DateL' : Date
-		'utL' : UT (hours from beginning of the day)
-		'FL' : Frequency bins
 		'SpectraEu' : SpecCls object, contains Spectra
 		'SpectraEv' : SpecCls object, contains Spectra
 		'SpectraBgamma' : SpecCls object, contains Spectra

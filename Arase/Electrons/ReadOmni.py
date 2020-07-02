@@ -20,7 +20,14 @@ def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 		Date[1] are loaded.
 		If Date contains > 2 elements, all dates within the list will
 		be loaded.
-			
+	Instruments : str
+		List of instruments to combine, can contain any of the following:
+		'LEPe'|'LEP'|'MEPe'|'MEP'|'HEP'|'XEP'
+		
+	Returns
+	=======
+	Arase.Tools.PSpecCls object
+		
 	
 	'''
 

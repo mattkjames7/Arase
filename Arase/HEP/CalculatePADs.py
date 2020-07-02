@@ -6,6 +6,32 @@ from ..Tools.CDFEpochToUT import CDFEpochToUT
 from scipy.stats import binned_statistic
 
 def CalculatePADs(Date,na=18,Verbose=True):
+	'''
+	Calculates a pitch angle distribution of the differential energy flux
+	data using the level 2 3dflux data.
+	
+	WARNING: This may not be exactly the same as level 3 data, also 
+	some level 2 data is missing the instrument orientation data required
+	
+	Inputs
+	======
+	Date : int
+		Date to alcualte PAD for
+	na : int
+		Number of alpha (pitch angle) bins to create in the range 0 to 
+		180 degrees
+	Verbose: bool
+		Display progress
+		
+		
+	Returns
+	=======
+	out : dict
+		Contains a dict for each species
+	
+	'''
+	
+	
 	
 	#for HEP we should average over each sector
 	

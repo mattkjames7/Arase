@@ -22,25 +22,18 @@ def ReadOmni(Date):
 	=======
 	data : dict
 		Contains the following fields:
-		'Epoch' : CDF epoch
-		'EpochTOF' : CDF epoch
-		'Date' : Date
-		'DateTOF' : Date
-		'ut' : UT (hours from beginning of the day)
-		'utTOF' : UT (hours from beginning of the day)
-		'Energy' : Energy bins
-		'H+Flux' : SpecCls object, contains proton fluxes
-		'He++Flux' : SpecCls object, contains helium ++ ion fluxes
-		'He+Flux' : SpecCls object, contains helium ion fluxes
-		'O++Flux' : SpecCls object, contains oxygen ++ ion fluxes
-		'O+Flux' : SpecCls object, contains oxygen ion fluxes
-		'O2+Flux' : SpecCls object, contains molecular oxygen ion fluxes
-		'H+FluxTOF' : SpecCls object, contains proton fluxes
-		'He++FluxTOF' : SpecCls object, contains helium ++ ion fluxes
-		'He+FluxTOF' : SpecCls object, contains helium ion fluxes
-		'O++FluxTOF' : SpecCls object, contains oxygen ++ ion fluxes
-		'O+FluxTOF' : SpecCls object, contains oxygen ion fluxes
-		'O2+FluxTOF' : SpecCls object, contains molecular oxygen ion fluxes
+		'H+Flux' : PSpecCls object, contains proton fluxes
+		'He++Flux' : PSpecCls object, contains helium ++ ion fluxes
+		'He+Flux' : PSpecCls object, contains helium ion fluxes
+		'O++Flux' : PSpecCls object, contains oxygen ++ ion fluxes
+		'O+Flux' : PSpecCls object, contains oxygen ion fluxes
+		'O2+Flux' : PSpecCls object, contains molecular oxygen ion fluxes
+		'H+FluxTOF' : PSpecCls object, contains proton fluxes
+		'He++FluxTOF' : PSpecCls object, contains helium ++ ion fluxes
+		'He+FluxTOF' : PSpecCls object, contains helium ion fluxes
+		'O++FluxTOF' : PSpecCls object, contains oxygen ++ ion fluxes
+		'O+FluxTOF' : PSpecCls object, contains oxygen ion fluxes
+		'O2+FluxTOF' : PSpecCls object, contains molecular oxygen ion fluxes
 		
 	For more information about the PSpecCls object, see Arase.Tools.PSpecCls 
 		

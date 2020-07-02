@@ -22,11 +22,6 @@ def ReadEFD(Date):
 	=======
 	data : dict
 		Contains the following fields:
-		'Epoch' : CDF epoch
-		'Date' : Date
-		'ut' : UT (hours from beginning of the day)
-		'F' : Frequency bins
-		'F100' : Frequency bins
 		'Spectra' : SpecCls object, contains Spectra
 		'SpectraEvEv' : SpecCls object, contains Spectra
 		'SpectraEuEu' : SpecCls object, contains Spectra

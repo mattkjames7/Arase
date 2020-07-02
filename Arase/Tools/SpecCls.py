@@ -134,13 +134,12 @@ class SpecCls(object):
 		Epoch : float
 			CDF epoch 
 		Freq : float
-			Either an array of frequencies or energies depending upon the
-			type of spectrum
+			Array of frequencies
 		Spec : float
 			2D array containing the spectral data, shape (nt,nf) where
 			nt is ut.size and nf is Freq.size
 		bw : None or float
-			Width of the energy/frequency bins
+			Width of the frequency bins
 		dt : None or float
 			duration of each spectrum
 		Meta : dict
@@ -395,8 +394,9 @@ class SpecCls(object):
 		return ax
 				
 		
-	def Plot(self,Date=None,ut=[0.0,24.0],fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,
-			cmap='gnuplot',nox=False,noy=False):
+	def Plot(self,Date=None,ut=[0.0,24.0],fig=None,maps=[1,1,0,0],
+			ylog=None,scale=None,zlog=None,cmap='gnuplot',nox=False,
+			noy=False):
 		'''
 		Plots the spectrogram
 		

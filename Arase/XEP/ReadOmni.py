@@ -22,11 +22,6 @@ def ReadOmni(Date):
 	=======
 	data : dict
 		Contains the following fields:
-		'Epoch' : CDF epoch
-		'Date' : Date
-		'ut' : UT (hours from beginning of the day)
-		'EnergySSD' : SSD Energy bins
-		'EnergyGSO' : GSO Energy bins
 		'eFluxSSD' : SpecCls object, contains SSD electron fluxes
 		'eFluxGSO' : SpecCls object, contains GSO electron fluxes
 		

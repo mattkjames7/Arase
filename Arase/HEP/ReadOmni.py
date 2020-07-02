@@ -21,19 +21,10 @@ def ReadOmni(Date):
 	Returns
 	=======
 	data : dict
-		Contains the following fields:
-		'EpochL' : CDF epoch
-		'EpochH' : CDF epoch
-		'DateL' : Date
-		'DateH' : Date
-		'utL' : UT (hours from beginning of the day)
-		'utH' : UT (hours from beginning of the day)
-		'EnergyL' : Energy bins
-		'EnergyH' : Energy bins
-		'eFluxL' : SpecCls object, contains electron fluxes
-		'eFluxH' : SpecCls object, contains electron fluxes
+		'eFluxL' : PSpecCls object, contains electron fluxes
+		'eFluxH' : PSpecCls object, contains electron fluxes
 		
-	For more information about the SpecCls object, see Arase.Tools.SpecCls 
+	For more information about the PSpecCls object, see Arase.Tools.PSpecCls 
 		
 
 	'''	

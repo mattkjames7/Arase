@@ -4,7 +4,7 @@ from .. import Globals
 
 def DeleteDate(Date,L,prod,Confirm=True):
 	'''
-	delete all of the files from a given date
+	Delete all of the files from a given date
 	
 	'''
 	idxfname = Globals.DataPath + 'HEP/Index-L{:01d}-{:s}.dat'.format(L,prod)

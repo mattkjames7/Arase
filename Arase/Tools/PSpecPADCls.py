@@ -12,10 +12,7 @@ from .CountstoPSD import CountstoPSD
 from scipy.stats import mode
 import DateTimeTools as TT
 
-defargs = {	'Meta' : None,
-			'dt' : None,
-			'ew' : None,
-			'tlabel' : 'UT',
+defargs = {	'tlabel' : 'UT',
 			'elabel' : '$E$ (keV)',
 			'vlabel' : '$V$ (m s$^{-1}$)',
 			'alabel' : r'Pitch Angle, $\alpha$ ($^{\circ}$)',
@@ -46,20 +43,30 @@ class PSpecPADCls(object):
 		
 		Inputs
 		=====
+		PADSpec : dict
+			dictionary containing the pitch angle distribution data
 		SpecType : str
 			'e'|'H'|'He'|'O'|'O2'
-		xlabel : str
-			Label for x-axis
-		ylabel : str
-			Label for Energy
-		zlabel : str
-			Label for pitch angle
-		clabel : str
-			Label for color scale
-		ylog : bool
-			True for logarithmic y-axis
-		clog : bool
-			True for logarithmic color scale
+		tlabel : str
+			Label for time axis
+		elabel : str
+			Label for Energy axis
+		vlabel : str
+			Label for velocity axis
+		alabel : str
+			Label for pitch angle axis
+		flabel : str
+			Label for fluxes
+		plabel : str
+			Label for PSD
+		elog : bool
+			True for logarithmic energy axis
+		vlog : bool
+			True for logarithmic velocity axis
+		flog : bool
+			True for logarithmic flux axis
+		plog : bool
+			True for logarithmic PSD axis
 		
 		'''
 		
@@ -311,7 +318,36 @@ class PSpecPADCls(object):
 		return (x,x0,x1),(y,y0,y1),z,xlabel,ylabel,zlabel
 		
 	def GetSpectrum2D(self,ut,Method='nearest',Maxdt=60.0,xparam='E',zparam='Flux'):
+		'''
+		Return a 2D particle spectrum
 		
+		Inputs
+		======
+		ut : float
+			Time of particle spectrum to get (hours from start of day)
+		Method : str
+			'Nearest'|'Interp' - either find the nearest time (within
+			Maxdt seconds of ut, or interpolate if possible between two
+			nearest spectra)
+		Maxdt : float
+			Maximum acceptable difference in time between ut and the 
+			returned spectrum
+		xparam : str
+			One dimension of the returned spectrum
+			'E' - Energy
+			'V' - Velocity
+		zparam : str
+			'Flux'|'PSD' - type of spectrum to return.
+		
+		Returns
+		=======
+		(x,x0,x1) : middle,minimum,maximum of xparam bins
+		(y,y0,y1) : middle,minimum,maximum of alpha (pitch angle) bins
+		z : 2D array of either Flux or PSD
+		xlabel : Plot label for x-axis
+		ylabel : Plot label for y-axis
+		zlabel : Plot label for z-axis
+		'''
 		
 		
 		#get the current date
@@ -326,38 +362,39 @@ class PSpecPADCls(object):
 	
 		return x,y,z,xlabel,ylabel,zlabel
 	
-	def GetSpectrum1D(self,ut,Bin=0,Method='nearest',Maxdt=60.0,xparam='E',zparam='Flux'):
+	def GetSpectrum1D(self,ut,Bin=0,Method='nearest',Maxdt=60.0,xparam='E',yparam='Flux'):
 		'''
-		This method will return a spectrum from a given time.
+		Return a 1D particle spectrum
 		
 		Inputs
 		======
-		Date : int
-			Date in format yyyymmdd
 		ut : float
-			Time in hours since beginning of the day
+			Time of particle spectrum to get (hours from start of day)
+		Bin : int
+			Index of bin to use - when xparam is 'alpha', Bin corresponds
+			to the energy/velocity bin, otherwise Bin corresponds to the
+			pitch angle bin number.
 		Method : str
-			'nearest'|'interpolate' - will find the nearest spectrum to
-			the time specified time, or will interpolate between two 
-			surrounding spectra.
+			'Nearest'|'Interp' - either find the nearest time (within
+			Maxdt seconds of ut, or interpolate if possible between two
+			nearest spectra)
 		Maxdt : float
-			Maximum difference in time between the specified time and the
-			time of the spectra in seconds.
-		Split : bool
-			If True, the spectra will be returned as a list, if False,
-			they will be combined to form a single spectrum.
-		PSD : bool
-			If True then phase space density will be returned
+			Maximum acceptable difference in time between ut and the 
+			returned spectrum
+		xparam : str
+			One dimension of the returned spectrum
+			'E' - Energy
+			'V' - Velocity
+			'alpha' - pitch angle
+		yparam : str
+			'Flux'|'PSD' - type of spectrum to return.
 		
 		Returns
 		=======
-		energy : float/list
-			Array(s) of energies
-		spec : float/list
-			Array(s) containing specral data
-		labs : list
-			List of plot labels
-		
+		(x,x0,x1) : middle,minimum,maximum of xparam bins
+		y : 1D array of either Flux or PSD
+		xlabel : Plot label for x-axis
+		ylabel : Plot label for y-axis
 		'''
 	
 		#get the current date
@@ -368,17 +405,62 @@ class PSpecPADCls(object):
 		
 		#get the 2D spectrum (this could get a little confusing)
 		if xparam == 'alpha':
-			_,x,y,_,xlabel,ylabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,'E',zparam)
+			_,x,y,_,xlabel,ylabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,'E',yparam)
 			y = y[Bin]
 		else:
-			x,_,y,xlabel,_,ylabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,xparam,zparam)
+			x,_,y,xlabel,_,ylabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,xparam,yparam)
 			y = y[:,Bin]
 	
 		return x,y,xlabel,ylabel
 
-	def PlotSpectrum1D(self,ut,Bin=0,Method='nearest',Maxdt=60.0,xparam='E',yparam='Flux',
-		fig=None,maps=[1,1,0,0],color=None,xlog=None,ylog=None,nox=False,noy=False,
-		scale=None,cmap='gnuplot'):	
+	def PlotSpectrum1D(self,ut,Bin=0,Method='nearest',Maxdt=60.0,
+		xparam='E',yparam='Flux',fig=None,maps=[1,1,0,0],color=None,
+		xlog=None,ylog=None,nox=False,noy=False):	
+		'''
+		Plot a 1D particle spectrum
+		
+		Inputs
+		======
+		ut : float
+			Time of particle spectrum to get (hours from start of day)
+		Bin : int
+			Index of bin to use - when xparam is 'alpha', Bin corresponds
+			to the energy/velocity bin, otherwise Bin corresponds to the
+			pitch angle bin number.
+		Method : str
+			'Nearest'|'Interp' - either find the nearest time (within
+			Maxdt seconds of ut, or interpolate if possible between two
+			nearest spectra)
+		Maxdt : float
+			Maximum acceptable difference in time between ut and the 
+			returned spectrum
+		xparam : str
+			One dimension of the returned spectrum
+			'E' - Energy
+			'V' - Velocity
+			'alpha' - pitch angle
+		yparam : str
+			'Flux'|'PSD' - type of spectrum to return.
+		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
+			If None - a new plot is created
+			If an instance of pyplot then a new Axes is created on an existing plot
+			If Axes instance, then plotting is done on existing Axes
+		maps : list
+			[xmaps,ymaps,xmap,ymap] controls position of subplot
+		xlog : bool
+			if True, color scale is logarithmic
+		ylog : bool
+			If True, y-axis is logarithmic
+		nox : bool
+			If True, no labels or tick marks are drawn for the x-axis
+		noy : bool
+			If True, no labels or tick marks are drawn for the y-axis
+		color : None or list
+			Define the color of the line to be plotted
+		'''
+
+
+		
 		
 		#get the spectrum
 		x,y,xlabel,ylabel = self.GetSpectrum1D(ut,Bin,Method,Maxdt,xparam,yparam)
@@ -451,26 +533,25 @@ class PSpecPADCls(object):
 		fig=None,maps=[1,1,0,0],xlog=None,zlog=None,nox=False,noy=False,
 		scale=None,cmap='gnuplot'):	
 		'''
-		This method will plot a spectrum from a given time.
+		Plot a 2D particle spectrum
 		
 		Inputs
 		======
-		Date : int
-			Date in format yyyymmdd
 		ut : float
-			Time in hours since beginning of the day
+			Time of particle spectrum to get (hours from start of day)
 		Method : str
-			'nearest'|'interpolate' - will find the nearest spectrum to
-			the time specified time, or will interpolate between two 
-			surrounding spectra.
+			'Nearest'|'Interp' - either find the nearest time (within
+			Maxdt seconds of ut, or interpolate if possible between two
+			nearest spectra)
 		Maxdt : float
-			Maximum difference in time between the specified time and the
-			time of the spectra in seconds.
-		Split : bool
-			If True, the spectra will be returned as a list, if False,
-			they will be combined to form a single spectrum.
-		PSD : bool
-			If True then phase space density will be plotted
+			Maximum acceptable difference in time between ut and the 
+			returned spectrum
+		xparam : str
+			One dimension of the returned spectrum
+			'E' - Energy
+			'V' - Velocity
+		zparam : str
+			'Flux'|'PSD' - type of spectrum to return.
 		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
 			If None - a new plot is created
 			If an instance of pyplot then a new Axes is created on an existing plot
@@ -479,19 +560,22 @@ class PSpecPADCls(object):
 			[xmaps,ymaps,xmap,ymap] controls position of subplot
 		xlog : bool
 			if True, x-axis is logarithmic
-		ylog : bool
-			If True, y-axis is logarithmic
-		FitMaxwellian : bool or str
-			If True - the PSD will be used to fit a Maxwellian 
-			distribution, if 'counts' then the counts will be used 
-			instead.
-		FitKappa : bool or str
-			If True - the PSD will be used to fit a Kappa
-			distribution, if 'counts' then the counts will be used 
-			instead.			
+		zlog : bool
+			If True, color scale is logarithmic
+		nox : bool
+			If True, no labels or tick marks are drawn for the x-axis
+		noy : bool
+			If True, no labels or tick marks are drawn for the y-axis
+		cmap : str
+			String containing the name of the colomap to use
+		scale : list
+			2-element list or tuple containing the minimum and maximum
+			extents of the color scale
+		'''
 		
-				
-		'''	
+
+
+	
 		
 		#get the spectra
 		x,y,z,xlabel,ylabel,zlabel = self.GetSpectrum2D(ut,Method,Maxdt,xparam,zparam)
@@ -590,19 +674,18 @@ class PSpecPADCls(object):
 		
 		Inputs
 		======
-		Date : int32
-			This, along with 'ut' controls the time limits of the plot,
-			either set as a single date in the format yyyymmdd, or if 
-			plotting over multiple days then set a 2 element tuple/list/
-			numpy.ndarray with the start and end dates. If set to None 
-			(default) then the time axis limits will be calculated 
-			automatically.
 		ut : list/tuple
 			2-element start and end times for the plot, where each 
 			element is the time in hours sinsce the start fo the day,
 			e.g. 17:30 == 17.5.
-		PSD : bool
-			If True then phase space density will be plotted
+		Bin : int
+			Index of pitch angle bin to use
+		yparam : str
+			One dimension of the returned spectrum
+			'E' - Energy
+			'V' - Velocity
+		zparam : str
+			'Flux'|'PSD' - type of spectrum to return.
 		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
 			If None - a new plot is created
 			If an instance of pyplot then a new Axes is created on an existing plot
