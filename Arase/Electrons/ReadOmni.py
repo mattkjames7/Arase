@@ -6,7 +6,7 @@ from ..XEP.ReadOmni import ReadOmni as XEP
 from ..Tools.CombinePSpecCls import CombinePSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 
-def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
+def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP'],JoinBins=False):
 	'''
 	Get a SpecCls object containing all of the electron data in one place.
 
@@ -36,7 +36,7 @@ def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP']):
 	
 	if 'LEP' in Instruments or 'LEPe' in Instruments:
 		#Add LEP spectra
-		tmp = LEP(Date,KeV=True)
+		tmp = LEP(Date,KeV=True,JoinBins=JoinBins)
 		
 		if not len(list(tmp.keys())) == 0:
 			Data.append(tmp['eFlux'])

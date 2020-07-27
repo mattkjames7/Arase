@@ -1,10 +1,11 @@
 import numpy as np
 import DateTimeTools as TT
+from scipy.interpolate import interp1d
 
-def DTPlotLabel(fig,ut,date,Seconds=False,IncludeYear=True,TickFreq='default'):
+def PosDTPlotLabel(fig,ut,date,fL,fLon,fLat,Seconds=False,TickFreq='default'):
 	'''
 	Simple subroutine to convert the time axis of a plot to show human 
-	readable times and dates, hopefully!
+	readable times and dates and positions, hopefully!
 	
 	Inputs:
 		fig: Either an instance of pyplot or pyplot.Axes passed to the 
@@ -43,6 +44,7 @@ def DTPlotLabel(fig,ut,date,Seconds=False,IncludeYear=True,TickFreq='default'):
 		mt = np.arange(mt0,mt1+tf,tf)
 		use = np.where((mt >= trnge[0]) & ( mt <= trnge[1]))[0]
 		mt = mt[use]
+
 		
 	#get tick ut and dates
 	tickut = mt % 24.0		
@@ -66,19 +68,23 @@ def DTPlotLabel(fig,ut,date,Seconds=False,IncludeYear=True,TickFreq='default'):
 			
 			tickdate[use] = d
 	
+	L = fL(mt)
+	Lat = fLat(mt)
+	Lon = fLon(mt)
 			
-	labels = np.zeros(mt.size,dtype='U20')
+	labels = np.zeros(mt.size+1,dtype=object)
 	Months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 	for i in range(0,mt.size):
 		
-		yr,mn,dy = TT.DateSplit(tickdate[i])
-		datestr = '{:02d} '.format(np.int(dy))+Months[mn-1]
-		if IncludeYear:
-			datestr += '\n{:04d}'.format(yr)
+		# if i == 0:
+			# labels[i] = 'L          {:3.1f}            \nMlat    {:5.1f}           \nMlon  {:6.1f}          \n'.format(L[i],Lat[i],Lon[i])
+		# else:
+			# labels[i] = '{:3.1f}\n{:5.1f}\n{:6.1f}\n'.format(L[i],Lat[i],Lon[i])
+		labels[i] = '{:3.1f}\n{:5.1f}\n{:6.1f}\n'.format(L[i],Lat[i],Lon[i])
 		
 		hh,mm,ss,ms = TT.DectoHHMM(tickut[i],True,True,True)
 		if Seconds:
-			utstr='{:02n}:{:02n}:{:02n}'.format(hh,mm,ss)
+			utstr='{:02d}:{:02d}:{:02d}'.format(hh,mm,ss)
 		else:
 			if ss >= 30:
 				mm+=1
@@ -88,10 +94,27 @@ def DTPlotLabel(fig,ut,date,Seconds=False,IncludeYear=True,TickFreq='default'):
 				mm=0
 			if hh > 23:
 				hh = 0
-			utstr = '{:02n}:{:02n}'.format(hh,mm)
-		labels[i] = utstr+'\n'+datestr
+			utstr = '{:02d}:{:02d}'.format(hh,mm)
 
+		labels[i] += utstr
+
+		
+		if tickut[i] == 0.0 or i == 0:
+			
+			yr,mn,dy = TT.DateSplit(tickdate[i])
+			datestr = '{:02d} '.format(np.int(dy))+Months[mn-1]
+			datestr += '\n{:04d}'.format(yr)
+			labels[i] += '\n'+datestr
+		
+			
 	R = fig.axis()
 	use = np.where((mt >= R[0]) & (mt <= R[1]))[0]
 	ax.set_xticks(mt[use])
 	ax.set_xticklabels(labels[use])
+	
+	xt0 = ax.xaxis.get_ticklabels()[0]
+	xp,yp = xt0.get_position()
+	trans = xt0.get_transform()
+	
+	s = 'L\nMlat\nMlon'
+	ax.text(xp-0.15*(R[1]-R[0]),0,s,ha='left',va='top',transform=trans)

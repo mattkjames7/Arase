@@ -11,6 +11,9 @@ from .CountstoFlux import CountstoFlux
 from .CountstoPSD import CountstoPSD
 from scipy.stats import mode
 import DateTimeTools as TT
+from ..Pos.ReadFieldTraces import ReadFieldTraces
+from .PosDTPlotLabel import PosDTPlotLabel
+
 
 defargs = {	'tlabel' : 'UT',
 			'elabel' : '$E$ (keV)',
@@ -255,10 +258,16 @@ class PSpecPADCls(object):
 			zlabel = self.flabel
 			
 		#sort the E/V axis
-		srt = np.argsort(x)
-		x = x[srt]
-		x0 = x0[srt]
-		x1 = x1[srt]
+		if len(x.shape) == 1:
+			srt = np.argsort(x)
+			x = x[srt]
+			x0 = x0[srt]
+			x1 = x1[srt]
+		else:
+			srt = np.argsort(x[0,:])
+			x = x[:,srt]
+			x0 = x0[:,srt]
+			x1 = x1[:,srt]
 		z = z[:,srt,:]
 			
 		#find the surrounding utc
@@ -637,9 +646,9 @@ class PSpecPADCls(object):
 			
 		#get color scale
 		if zlog:
-			norm = colors.LogNorm()
+			norm = colors.LogNorm(vmin=scale[0],vmax=scale[1])
 		else:
-			norm = colors.Normalize()
+			norm = colors.Normalize(vmin=scale[0],vmax=scale[1])
 	
 		for i in range(0,x[0].size):				
 			xtmp = np.array([x0[i],x1[i]])
@@ -649,7 +658,7 @@ class PSpecPADCls(object):
 				
 				ztmp = np.array([z[i]])
 				
-				sm = ax.pcolormesh(xg,yg,ztmp.T,cmap=cmap,norm=norm,vmin=scale[0],vmax=scale[1])
+				sm = ax.pcolormesh(xg,yg,ztmp.T,cmap=cmap,norm=norm)
 		
 		#colorbar
 		divider = make_axes_locatable(ax)
@@ -668,7 +677,7 @@ class PSpecPADCls(object):
 		
 	def PlotSpectrogram(self,Bin,ut=None,fig=None,maps=[1,1,0,0],
 			yparam='E',zparam='Flux',ylog=None,scale=None,zlog=None,
-			cmap='gnuplot',nox=False,noy=False):
+			cmap='gnuplot',nox=False,noy=False,TickFreq='auto',PosAxis=True):
 		'''
 		Plots the spectrogram
 		
@@ -787,26 +796,88 @@ class PSpecPADCls(object):
 			
 		#get color scale
 		if zlog:
-			norm = colors.LogNorm()
+			norm = colors.LogNorm(vmin=scale[0],vmax=scale[1])
 		else:
-			norm = colors.Normalize()
+			norm = colors.Normalize(vmin=scale[0],vmax=scale[1])
 			
 		#create plots
-		sm = self._PlotSpectrogram(ax,y0,y1,z,scale,norm,cmap)
+		sm = self._PlotSpectrogram(ax,y0,y1,z,norm,cmap)
 
 		#sort the UT axis out
 		DTPlotLabel(ax,self.utc,self.Date)
 		
-
+		if PosAxis:
+			Date = mode(self.Date)[0][0]
+			Pos = ReadFieldTraces(Date)
+			
+			#get the Lshell, Mlat and Mlon
+			good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
+			Pos = Pos[good]
+			fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
+			fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
+			fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
+		
+			PosDTPlotLabel(ax,self.utc,self.Date,fL,fLon,fLat,TickFreq=TickFreq)
+		else:
+			DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
+			
 		#colorbar
 		divider = make_axes_locatable(ax)
 		cax = divider.append_axes("right", size="2.5%", pad=0.05)
 
 		cbar = fig.colorbar(sm,cax=cax) 
-		cbar.set_label(zlabel)		
+		cbar.set_label(zlabel)	
+		self.currax = ax	
 		return ax
 
-	def _PlotSpectrogram(self,ax,y0,y1,z,scale,norm,cmap):
+	def UpdateTimeAxis(self,ax=None,ut=None,TickFreq='auto'):
+		'''
+		Update the time ax is limits and labels.
+		
+		Inputs
+		======
+		ax : None or Axes object
+			If None, then the current Axes instance will be used
+		ut : list/tuple
+			2-element start and end times for the plot, where each 
+			element is the time in hours sinsce the start fo the day,
+			e.g. 17:30 == 17.5.
+		TickFreq : str or float
+			If 'auto' the tick spacing will be calculated automatically,
+			otherwise set to a number of hours between each tick.
+		
+		'''
+		
+		#check if an Axes instance has been supplied (if not, try getting the current one)
+		if ax is None:
+			ax = self.currax
+			
+		#check if we need to resize
+		if not ut is None:
+			Date = mode(self.Date)[0][0]
+			utclim = ContUT(np.array([Date,Date]),np.array(ut))
+			ax.set_xlim(utclim)		
+			
+		#now update the axis
+		if PosAxis:
+			Date = mode(self.Date)[0][0]
+			
+			Pos = ReadFieldTraces(Date)
+			
+			#get the Lshell, Mlat and Mlon
+			good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
+			Pos = Pos[good]
+			fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
+			fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
+			fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
+		
+		
+			PosDTPlotLabel(ax,self.utc,self.Date,fL,fLon,fLat,TickFreq=TickFreq)
+		else:
+			DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
+
+
+	def _PlotSpectrogram(self,ax,y0,y1,z,norm,cmap):
 		'''
 		This will plot a single spectrogram
 		
@@ -843,7 +914,7 @@ class PSpecPADCls(object):
 
 		#loop through each continuous block of utc
 		for i in range(0,ng):
-			ttmp = np.append(t0[i0[i]:i1[i]-1],t1[i1[i]-1])
+			ttmp = np.append(t0[i0[i]:i1[i]],t1[i1[i]-1])
 			st = z[i0[i]:i1[i]]
 			for j in range(0,ne):				
 				if len(y0.shape) > 1:
@@ -855,7 +926,7 @@ class PSpecPADCls(object):
 					tg,eg = np.meshgrid(ttmp,etmp)
 					s = np.array([st[:,j]])
 					
-					sm = ax.pcolormesh(tg,eg,s,cmap=cmap,norm=norm,vmin=scale[0],vmax=scale[1])
+					sm = ax.pcolormesh(tg,eg,s,cmap=cmap,norm=norm)
 			
 		return sm
 		

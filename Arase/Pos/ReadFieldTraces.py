@@ -12,7 +12,7 @@ def ReadFieldTraces(Date,Model='T96'):
 	
 	#populate the list of dates
 	Date = np.array([Date]).flatten()
-	if Date.size > 1:
+	if np.size(Date) > 1:
 		date = Date[0]
 		dates = []
 		while date <= Date[-1]:
@@ -23,12 +23,12 @@ def ReadFieldTraces(Date,Model='T96'):
 	else:
 		dates = Date
 		n = 1
-
 		
 	#now to list the files
 	path = Globals.DataPath+'Traces/{:s}/'.format(Model)
 	fpatt = path + '{:08d}.bin'
-	files = np.array((n,),dtype='object')
+	files = np.zeros((n,),dtype='object')
+
 
 	for i in range(0,n):
 		files[i] = fpatt.format(dates[i])
@@ -47,7 +47,7 @@ def ReadFieldTraces(Date,Model='T96'):
 			('GlatN','float32'),('GlatS','float32'),('MlonN','float32'),('MlonS','float32'),
 			('GlonN','float32'),('GlonS','float32'),('MltN','float32'),('MltS','float32'),
 			('GltN','float32'),('GltS','float32'),('MltE','float32'),('Lshell','float32'),
-			('FlLen','float32'),('Rmax','float32'),('Rnorm','float32'),
+			('FlLen','float32'),('Rmax','float32'),('Rnorm','float32'),('Tilt','float32'),
 			('Xgse','float32'),('Ygse','float32'),('Zgse','float32'),
 			('Xgsm','float32'),('Ygsm','float32'),('Zgsm','float32'),
 			('Xsm','float32'),('Ysm','float32'),('Zsm','float32')]

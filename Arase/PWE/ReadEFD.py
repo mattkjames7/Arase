@@ -61,7 +61,7 @@ def ReadEFD(Date):
 
 
 		#read the CDF file
-		data,meta = _ReadCDF(date,'efd',2,'spec')		
+		data,meta = ReadCDF(date,'efd',2,'spec')		
 		
 
 		if data is None:

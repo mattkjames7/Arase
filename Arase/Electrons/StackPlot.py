@@ -4,7 +4,7 @@ from .. import LEPe,MEPe,HEP,XEP
 from ..Tools.PlotLabel import PlotLabel
 
 def StackPlot(Date,ut=[0.0,24.0],Instruments=['XEP','HEP-H','HEP-L','MEPe','LEPe'],
-	figsize=(8,11),PSD=False,scale=None):
+	figsize=(8,11),PSD=False,scale=None,JoinBins=False):
 	'''
 	Plot electron data with each intrument on a separate panel.
 	
@@ -35,7 +35,7 @@ def StackPlot(Date,ut=[0.0,24.0],Instruments=['XEP','HEP-H','HEP-L','MEPe','LEPe
 	Hdata = {}
 	Xdata = {}
 	if 'LEPe' in Instruments:
-		Ldata = LEPe.ReadOmni(Date)
+		Ldata = LEPe.ReadOmni(Date,KeV=True,JoinBins=JoinBins)
 	if 'MEPe' in Instruments:
 		Mdata = MEPe.ReadOmni(Date)
 	if 'HEP-L' in Instruments or 'HEP-H' in Instruments:

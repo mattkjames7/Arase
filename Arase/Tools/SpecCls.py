@@ -5,6 +5,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from .ContUT import ContUT
 from .DTPlotLabel import DTPlotLabel
 from scipy.interpolate import interp1d
+from ..Pos.ReadFieldTraces import ReadFieldTraces
+from .PosDTPlotLabel import PosDTPlotLabel
 
 defargs = {	'Meta' : None,
 			'dt' : None,
@@ -396,7 +398,7 @@ class SpecCls(object):
 		
 	def Plot(self,Date=None,ut=[0.0,24.0],fig=None,maps=[1,1,0,0],
 			ylog=None,scale=None,zlog=None,cmap='gnuplot',nox=False,
-			noy=False):
+			noy=False,TickFreq='auto',PosAxis=True):
 		'''
 		Plots the spectrogram
 		
@@ -484,13 +486,13 @@ class SpecCls(object):
 			else:
 				scale = self._scale
 		if zlog:
-			norm = colors.LogNorm()
+			norm = colors.LogNorm(vmin=scale[0],vmax=scale[1])
 		else:
-			norm = colors.Normalize()
+			norm = colors.Normalize(vmin=scale[0],vmax=scale[1])
 			
 		#create plots
 		for i in range(0,self.n):
-			tmp = self._PlotSpectrogram(ax,i,scale,norm,cmap)
+			tmp = self._PlotSpectrogram(ax,i,norm,cmap)
 			if i == 0:
 				sm = tmp
 
@@ -500,8 +502,21 @@ class SpecCls(object):
 		srt = np.argsort(tutc)
 		tdate = tdate[srt]
 		tutc = tutc[srt]
-		DTPlotLabel(ax,tutc,tdate)
+		if PosAxis:
+			udate = np.unique(tdate)
 
+			Pos = ReadFieldTraces([udate[0],udate[-1]])
+			
+			#get the Lshell, Mlat and Mlon
+			good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
+			Pos = Pos[good]
+			fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
+			fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
+			fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
+		
+			PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
+		else:
+			DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)
 
 		#colorbar
 		divider = make_axes_locatable(ax)
@@ -511,7 +526,7 @@ class SpecCls(object):
 		cbar.set_label(self.zlabel)		
 		return ax
 
-	def _PlotSpectrogram(self,ax,I,scale,norm,cmap):
+	def _PlotSpectrogram(self,ax,I,norm,cmap):
 		'''
 		This will plot a single spectrogram (multiple may be stored in
 		this object at any one time
@@ -562,7 +577,7 @@ class SpecCls(object):
 
 		#loop through each continuous block of utc
 		for i in range(0,ng):
-			ttmp = np.append(t0[i0[i]:i1[i]-1],t1[i1[i]-1])
+			ttmp = np.append(t0[i0[i]:i1[i]],t1[i1[i]-1])
 			st = Spec[i0[i]:i1[i]]
 			for j in range(0,nf):				
 				if len(f.shape) > 1:
@@ -575,7 +590,7 @@ class SpecCls(object):
 					
 					s = np.array([st[:,j]])
 					
-					sm = ax.pcolormesh(tg,fg,s,cmap=cmap,norm=norm,vmin=scale[0],vmax=scale[1])
+					sm = ax.pcolormesh(tg,fg,s,cmap=cmap,norm=norm)
 			
 		return sm
 		

@@ -70,7 +70,7 @@ def ReadHFALow(Date):
 
 
 		#read the CDF file
-		data,meta = _ReadCDF(date,'hfa',2,'low')		
+		data,meta = ReadCDF(date,'hfa',2,'low')		
 		
 		if data is None:
 			continue
@@ -94,7 +94,7 @@ def ReadHFALow(Date):
 			bad = np.where(spec == -999.9)
 			spec[bad] = np.nan
 			if out[field] is None:
-				out[field] = SpecCls(SpecType='freq',ylabel=ylabel,zlabel=zlabel,ScaleType=ScaleType,zlog=True)
+				out[field] = SpecCls(SpecType='freq',ylabel=ylabel,zlabel=zlabel,ScaleType=ScaleType,ylog=True,zlog=True)
 			out[field].AddData(sDate,sut,sEpoch,sF,spec,Meta=meta[k],dt=data['time_step']/3600.0)
 		
 	return out	

@@ -4,7 +4,7 @@ from ..Tools.PSpecCls import PSpecCls
 from ..Tools.CDFEpochToUT import CDFEpochToUT
 from ..Tools.ListDates import ListDates
 
-def ReadOmni(Date,KeV=True):
+def ReadOmni(Date,KeV=True,JoinBins=False):
 	'''
 	Reads the level 2 omniflux data product for a given date.
 	
@@ -60,7 +60,28 @@ def ReadOmni(Date,KeV=True):
 		if KeV:
 			sEnergy = sEnergy/1000.0
 		emid = 10**np.mean(np.log10(sEnergy),axis=1)
-		ew = sEnergy[:,1,:] - sEnergy[:,0,:]
+		if JoinBins:
+			mean = np.nanmean(emid,axis=0)
+			
+			srt = np.argsort(mean)
+			le = np.log10(emid[:,srt])
+			
+			emm = 0.5*(le[:,1:] + le[:,:-1])
+			
+			ew00 = np.abs(le[:,0]-emm[:,0])
+			ew01 = np.abs(le[:,1:]-emm)
+			ew0 = np.append(ew00.reshape([-1,1]),ew01,axis=1)
+			ew11 = np.abs(le[:,-1]-emm[:,-1])
+			ew10 = np.abs(le[:,:-1]-emm)
+			ew1 = np.append(ew10,ew11.reshape([-1,1]),axis=1)
+			ew = ew0 + ew1
+			print(le[0])
+			print(ew[0])
+			
+			ew[:,srt] = 10**ew
+
+		else:
+			ew = sEnergy[:,1,:] - sEnergy[:,0,:]
 
 
 		#replace bad data

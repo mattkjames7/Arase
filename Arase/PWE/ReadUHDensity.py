@@ -53,7 +53,7 @@ def ReadUHDensity(Date):
 	for date in dates:	
 
 		#read the CDF file
-		data,meta = _ReadCDF(date,'hfa',3,'')		
+		data,meta = ReadCDF(date,'hfa',3,'')		
 
 		if data is None:
 			continue
