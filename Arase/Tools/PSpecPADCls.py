@@ -763,13 +763,7 @@ class PSpecPADCls(object):
 		ax.set_xlabel(self.tlabel)
 		ax.set_title(title)
 	
-		#turn axes off when needed
-		if nox:
-			ax.set_xlabel('')
-			ax.xaxis.set_ticks([])
-		if noy:
-			ax.set_ylabel('')
-			ax.yaxis.set_ticks([])
+
 
 		#get z stuff
 		if zparam == 'Flux':
@@ -803,23 +797,31 @@ class PSpecPADCls(object):
 		#create plots
 		sm = self._PlotSpectrogram(ax,y0,y1,z,norm,cmap)
 
-		#sort the UT axis out
-		DTPlotLabel(ax,self.utc,self.Date)
-		
-		if PosAxis:
-			Date = mode(self.Date)[0][0]
-			Pos = ReadFieldTraces(Date)
-			
-			#get the Lshell, Mlat and Mlon
-			good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
-			Pos = Pos[good]
-			fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
-			fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
-			fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
-		
-			PosDTPlotLabel(ax,self.utc,self.Date,fL,fLon,fLat,TickFreq=TickFreq)
+		#turn axes off when needed
+		if nox:
+			ax.set_xlabel('')
+			ax.xaxis.set_ticks([])
 		else:
-			DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
+			#sort the UT axis out
+			if PosAxis:
+				Date = mode(self.Date)[0][0]
+				Pos = ReadFieldTraces(Date)
+				
+				#get the Lshell, Mlat and Mlon
+				good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
+				Pos = Pos[good]
+				fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
+				fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
+				fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
+			
+				PosDTPlotLabel(ax,self.utc,self.Date,fL,fLon,fLat,TickFreq=TickFreq)
+			else:
+				DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
+		if noy:
+			ax.set_ylabel('')
+			ax.yaxis.set_ticks([])
+
+	
 			
 		#colorbar
 		divider = make_axes_locatable(ax)

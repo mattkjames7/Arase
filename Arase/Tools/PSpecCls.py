@@ -104,22 +104,28 @@ class PSpecCls(object):
 				#remove bad ones first
 				good = np.where((Energy > 0) & np.isfinite(Energy))[0]
 				if good.size > 1:
-					Fg = Energy[good]
+					Fg = np.log10(Energy[good])
 					
 					#get just unique ones
 					Fu,ind,inv,cts = np.unique(Fg,return_counts=True,return_index=True,return_inverse=True)
 					
-					df = Fu[1:] - Fu[:-1]
-					df = np.concatenate(([df[0]],df,[df[1]]))/2.0
-					ewtmp = df[1:] + df[:-1]	
+					#find the mid points
+					fm = 0.5*(Fu[1:] + Fu[:-1])
+					f0 = np.append(Fu[0] - fm[0] + Fu[0],fm)
+					f1 = np.append(fm,Fu[-1] + Fu[-1] - fm[-1])
+					ewtmp = f1 - f0
+					
+					#df = Fu[1:] - Fu[:-1]
+					#df = np.concatenate(([df[0]],df,[df[1]]))/2.0
+					#ewtmp = df[1:] + df[:-1]	
 					
 					ew = np.zeros(Energy.shape,dtype='float32') + np.nan
-					ew[good] = ewtmp[inv]	
+					ew[good] = 10**ewtmp[inv]	
 				else:
 					ew = np.zeros(Energy.shape,dtype='float32') + np.nan	
 			else:
 				srt = np.argsort(Energy[0,:])
-				tmpF = Energy[:,srt]
+				tmpF = np.log10(Energy[:,srt])
 			
 				df = tmpF[1:] - tmpF[:-1]
 				df = np.concatenate(([df[0]],df,[df[1]]))/2.0
@@ -127,7 +133,7 @@ class PSpecCls(object):
 				
 				
 				ew = np.zeros(Energy.shape,dtype='float32')
-				ew[srt] = ewtmp	
+				ew[srt] = 10**ewtmp	
 			
 		elif np.size(ew) == 1:
 			#if it is a single value, then turn it into an array the same size as Energy
@@ -584,13 +590,7 @@ class PSpecCls(object):
 		else:
 			ax.set_ylabel(self.ylabel)
 	
-		#turn axes off when needed
-		if nox:
-			ax.set_xlabel('')
-			ax.xaxis.set_ticks([])
-		if noy:
-			ax.set_ylabel('')
-			ax.yaxis.set_ticks([])
+
 
 			
 		#get color scale
@@ -625,22 +625,34 @@ class PSpecCls(object):
 		srt = np.argsort(tutc)
 		tdate = tdate[srt]
 		tutc = tutc[srt]
-		if PosAxis:
-			udate = np.unique(tdate)
-			
-			Pos = ReadFieldTraces([udate[0],udate[-1]])
-			
-			#get the Lshell, Mlat and Mlon
-			good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
-			Pos = Pos[good]
-			fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
-			fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
-			fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
-		
-			PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
-		else:
-			DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)
 
+
+
+		#turn axes off when needed
+		if nox:
+			ax.set_xlabel('')
+			ax.xaxis.set_ticks([])
+		else:
+			if PosAxis:
+				udate = np.unique(tdate)
+				
+				Pos = ReadFieldTraces([udate[0],udate[-1]])
+				
+				#get the Lshell, Mlat and Mlon
+				good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
+				Pos = Pos[good]
+				fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
+				fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
+				fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
+			
+				PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
+			else:
+				DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)			
+				
+			
+		if noy:
+			ax.set_ylabel('')
+			ax.yaxis.set_ticks([])
 
 		#colorbar
 		divider = make_axes_locatable(ax)
@@ -742,8 +754,10 @@ class PSpecCls(object):
 		#get the energy band limits
 		bad = np.where(np.isnan(e))
 		e[bad] = 0.0
-		e0 = e - 0.5*ew
-		e1 = e + 0.5*ew
+		le = np.log10(e)
+		lw = np.log10(ew)
+		e0 = 10**(le - 0.5*lw)
+		e1 = 10**(le + 0.5*lw)
 
 		#get the ut array limits
 		t0 = utc
@@ -822,8 +836,10 @@ class PSpecCls(object):
 		#loop through each array
 		n = len(self.Energy)
 		for i in range(0,n):
-			e0 = self.Energy[i] - self.ew[i]/2.0
-			e1 = self.Energy[i] + self.ew[i]/2.0
+			le = np.log10(self.Energy[i])
+			lw = np.log10(self.ew[i])
+			e0 = 10**(le - 0.5*lw)
+			e1 = 10**(le + 0.5*lw)
 			mn = np.nanmin(e0)
 			mx = np.nanmax(e1)
 			if mn < elim[0]:

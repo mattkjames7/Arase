@@ -468,13 +468,6 @@ class SpecCls(object):
 		ax.set_xlabel(self.xlabel)
 		ax.set_ylabel(self.ylabel)
 	
-		#turn axes off when needed
-		if nox:
-			ax.set_xlabel('')
-			ax.xaxis.set_ticks([])
-		if noy:
-			ax.set_ylabel('')
-			ax.yaxis.set_ticks([])
 
 			
 		#get color scale
@@ -502,21 +495,31 @@ class SpecCls(object):
 		srt = np.argsort(tutc)
 		tdate = tdate[srt]
 		tutc = tutc[srt]
-		if PosAxis:
-			udate = np.unique(tdate)
 
-			Pos = ReadFieldTraces([udate[0],udate[-1]])
-			
-			#get the Lshell, Mlat and Mlon
-			good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
-			Pos = Pos[good]
-			fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
-			fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
-			fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
-		
-			PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
+		#turn axes off when needed
+		if noy:
+			ax.set_ylabel('')
+			ax.yaxis.set_ticks([])
+		if nox:
+			ax.set_xlabel('')
+			ax.xaxis.set_ticks([])
 		else:
-			DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)
+
+			if PosAxis:
+				udate = np.unique(tdate)
+
+				Pos = ReadFieldTraces([udate[0],udate[-1]])
+				
+				#get the Lshell, Mlat and Mlon
+				good = np.where(np.isfinite(Pos.Lshell) & np.isfinite(Pos.MlatN) & np.isfinite(Pos.MlonN))[0]
+				Pos = Pos[good]
+				fL = interp1d(Pos.utc,Pos.Lshell,bounds_error=False,fill_value='extrapolate')
+				fLon = interp1d(Pos.utc,Pos.MlonN,bounds_error=False,fill_value='extrapolate')
+				fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
+			
+				PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
+			else:
+				DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)
 
 		#colorbar
 		divider = make_axes_locatable(ax)
