@@ -4,7 +4,7 @@ from .. import LEPi,MEPi
 from ..Tools.PlotLabel import PlotLabel
 
 def StackPlot(Date,ut=[0.0,24.0],Instruments=['MEPi','LEPi'],Species='H+',
-	figsize=(8,6),PSD=False,scale=None):
+	figsize=(8,6),PSD=False,scale=None,TickFreq='auto',PosAxis=True):
 	'''
 	Plot electron data with each intrument on a separate panel.
 	
@@ -68,7 +68,7 @@ def StackPlot(Date,ut=[0.0,24.0],Instruments=['MEPi','LEPi'],Species='H+',
 			nox = False
 		else:
 			nox = True
-		a = data[i].Plot(Date,ut=ut,fig=plt,maps=[1,n,0,i],nox=nox,PSD=PSD,scale=scale)
+		a = data[i].Plot(Date,ut=ut,fig=plt,maps=[1,n,0,i],nox=nox,PSD=PSD,scale=scale,TickFreq=TickFreq,PosAxis=PosAxis)
 		ax.append(a)
 		
 	#remove space 
@@ -81,4 +81,4 @@ def StackPlot(Date,ut=[0.0,24.0],Instruments=['MEPi','LEPi'],Species='H+',
 		PlotLabel(ax[i],let[i]+' '+labels[i],x=0.02,y=0.9,ha='left')
 		
 
-	return fig
+	return fig,data
