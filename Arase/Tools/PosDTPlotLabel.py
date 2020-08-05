@@ -116,5 +116,5 @@ def PosDTPlotLabel(fig,ut,date,fL,fLon,fLat,Seconds=False,TickFreq='default'):
 	xp,yp = xt0.get_position()
 	trans = xt0.get_transform()
 	
-	s = 'L\nMlat\nMlon'
-	ax.text(xp-0.15*(R[1]-R[0]),0,s,ha='left',va='top',transform=trans)
+	s = 'L\nMlat\nMlon\nUT'
+	ax.text(R[0]-0.15*(R[1]-R[0]),0,s,ha='left',va='top',transform=trans)

@@ -646,6 +646,7 @@ class PSpecCls(object):
 				fLat = interp1d(Pos.utc,Pos.MlatN,bounds_error=False,fill_value='extrapolate')
 			
 				PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
+				ax.set_xlabel('')
 			else:
 				DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)			
 				
