@@ -1,8 +1,8 @@
 import numpy as np
 from .Read3D import Read3D
 from .GetPitchAngle import GetPitchAngle
-from ..Tools.ContUT import ContUT
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
+import DateTimeTools as TT
 from scipy.stats import binned_statistic
 
 def CalculatePADs(Date,na=18,Verbose=True):
@@ -62,7 +62,7 @@ def CalculatePADs(Date,na=18,Verbose=True):
 		ne = data[fenergy].size
 		
 		#get the dates/times
-		Date,ut = CDFEpochToUT(data['epoch'])
+		Date,ut = TT.CDFEpochtoDate(data['epoch'])
 		utc = ContUT(Date,ut)
 		
 		#get the energy arrays (shape: (nt,ne))

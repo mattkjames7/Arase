@@ -1,6 +1,6 @@
 import numpy as np
 from .ReadCDF import ReadCDF
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from ..Tools.ListDates import ListDates
 
 def ReadMGF(Date):
@@ -81,7 +81,7 @@ def ReadMGF(Date):
 		out = np.recarray(n,dtype=dtype)
 		
 		#get the data
-		out.Date,out.ut = CDFEpochToUT(data['epoch_8sec'])
+		out.Date,out.ut = TT.CDFEpochtoDate(data['epoch_8sec'])
 		out.Epoch = data['epoch_8sec']
 
 		#copy the various fields across

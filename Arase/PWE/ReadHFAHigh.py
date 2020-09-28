@@ -1,7 +1,7 @@
 import numpy as np
 from .ReadCDF import ReadCDF
 from ..Tools.SpecCls import SpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from ..Tools.ListDates import ListDates
 
 def ReadHFAHigh(Date):
@@ -76,7 +76,7 @@ def ReadHFAHigh(Date):
 		
 		#get the time 
 		sEpoch = data['Epoch']
-		sDate,sut = CDFEpochToUT(sEpoch)
+		sDate,sut = TT.CDFEpochtoDate(sEpoch)
 		
 		#the frequency arrays
 		sF = data['freq_spec']

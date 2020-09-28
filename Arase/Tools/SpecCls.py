@@ -2,8 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from .ContUT import ContUT
-from .DTPlotLabel import DTPlotLabel
+import DateTimeTools as TT
 from scipy.interpolate import interp1d
 from ..Pos.ReadFieldTraces import ReadFieldTraces
 from .PosDTPlotLabel import PosDTPlotLabel
@@ -165,7 +164,7 @@ class SpecCls(object):
 
 
 		#calculate continuous time axis
-		self.utc.append(ContUT(Date,ut))
+		self.utc.append(TT.ContUT(Date,ut))
 		
 		#calculate dt
 		self.dt.append(self._ProcessDT(dt,ut))
@@ -277,7 +276,7 @@ class SpecCls(object):
 		'''
 	
 		#convert to continuous time
-		utc = ContUT(np.array([Date]),np.array([ut]))[0]
+		utc = TT.ContUT(np.array([Date]),np.array([ut]))[0]
 		dutc = Maxdt/3600.0
 		
 		#create the objects to store spectra and energy/frequency bins
@@ -454,7 +453,7 @@ class SpecCls(object):
 			else:
 				Date0 = Date[0]
 				Date1 = Date[1]
-			utclim = ContUT(np.array([Date0,Date1]),np.array(ut))
+			utclim = TT.ContUT(np.array([Date0,Date1]),np.array(ut))
 			ax.set_xlim(utclim)
 		if ylog is None:
 			ylog = self._ylog
@@ -520,7 +519,7 @@ class SpecCls(object):
 				PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
 				ax.set_xlabel('')
 			else:
-				DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)
+				TT.DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)
 
 		#colorbar
 		divider = make_axes_locatable(ax)

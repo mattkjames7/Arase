@@ -1,7 +1,7 @@
 import numpy as np
 from .ReadCDF import ReadCDF
 from ..Tools.PSpecCls import PSpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from ..Tools.ListDates import ListDates
 
 def ReadOmni(Date):
@@ -90,9 +90,9 @@ def ReadOmni(Date):
 	
 		#get the time 
 		sEpoch = data['epoch']
-		sDate,sut = CDFEpochToUT(sEpoch)
+		sDate,sut = TT.CDFEpochtoDate(sEpoch)
 		sEpochTOF = data['epoch_tof']
-		sDateTOF,sutTOF = CDFEpochToUT(sEpochTOF)
+		sDateTOF,sutTOF = TT.CDFEpochtoDate(sEpochTOF)
 		
 		#the energy arrays
 		sEnergy = data['FIDO_Energy']

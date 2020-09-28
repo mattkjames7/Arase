@@ -2,8 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from .ContUT import ContUT
-from .DTPlotLabel import DTPlotLabel
+import DateTimeTools as TT
 from .PosDTPlotLabel import PosDTPlotLabel
 from scipy.interpolate import interp1d
 from .PSDtoCounts import PSDtoCounts
@@ -210,7 +209,7 @@ class PSpecCls(object):
 		self._CalculatePSD(Spec,Energy,self.ew[-1])
 		
 		#calculate continuous time axis
-		self.utc.append(ContUT(Date,ut))
+		self.utc.append(TT.ContUT(Date,ut))
 		
 		#calculate dt
 		self.dt.append(self._ProcessDT(dt,ut))
@@ -330,7 +329,7 @@ class PSpecCls(object):
 		'''
 	
 		#convert to continuous time
-		utc = ContUT(np.array([Date]),np.array([ut]))[0]
+		utc = TT.ContUT(np.array([Date]),np.array([ut]))[0]
 		dutc = Maxdt/3600.0
 		
 		#create the objects to store spectra and energy bins
@@ -566,7 +565,7 @@ class PSpecCls(object):
 			else:
 				Date0 = Date[0]
 				Date1 = Date[1]
-			utclim = ContUT(np.array([Date0,Date1]),np.array(ut))
+			utclim = TT.ContUT(np.array([Date0,Date1]),np.array(ut))
 			ax.set_xlim(utclim)
 		if ylog is None:
 			ylog = self._ylog
@@ -648,7 +647,7 @@ class PSpecCls(object):
 				PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
 				ax.set_xlabel('')
 			else:
-				DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)			
+				TT.DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)			
 				
 			
 		if noy:
@@ -704,7 +703,7 @@ class PSpecCls(object):
 			else:
 				Date0 = Date[0]
 				Date1 = Date[1]
-			utclim = ContUT(np.array([Date0,Date1]),np.array(ut))
+			utclim = TT.ContUT(np.array([Date0,Date1]),np.array(ut))
 			ax.set_xlim(utclim)		
 			
 		#now update the axis
@@ -727,7 +726,7 @@ class PSpecCls(object):
 		
 			PosDTPlotLabel(ax,tutc,tdate,fL,fLon,fLat,TickFreq=TickFreq)
 		else:
-			DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)		
+			TT.DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)		
 		
 
 	def _PlotSpectrogram(self,ax,I,norm,cmap,PSD):

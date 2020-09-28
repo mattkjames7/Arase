@@ -1,7 +1,7 @@
 import numpy as np
 from ._ReadCDF import _ReadCDF
-from ..Tools.CDFEpochToUT import CDFEpochToUT
-from ..Tools.ContUT import ContUT
+import DateTimeTools as TT
+import DateTimeTools as TT
 
 def ReadDef(Date):
 	'''
@@ -66,8 +66,8 @@ def ReadDef(Date):
 				'eclipse_flag' : 'Eclipse'}
 				
 	#convert dates and times
-	out.Date,out.ut = CDFEpochToUT(data['epoch'])
-	out.utc = ContUT(out.Date,out.ut)
+	out.Date,out.ut = TT.CDFEpochtoDate(data['epoch'])
+	out.utc = TT.ContUT(out.Date,out.ut)
 	
 	#move the data into the recarray
 	for f in list(fields.keys()):

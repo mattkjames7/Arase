@@ -1,5 +1,5 @@
 import numpy as np
-from .ContUT import ContUT
+import DateTimeTools as TT
 from ..MGF.InterpObj import InterpObj
 
 def CalculatePitchAngles(Date,ut,angles,mag):
@@ -24,7 +24,7 @@ def CalculatePitchAngles(Date,ut,angles,mag):
 	
 	'''
 	#continuous time axis
-	putc = ContUT(Date,ut)
+	putc = TT.ContUT(Date,ut)
 	
 	#work out unit vector in cartesian coordinates
 	px = np.cos(angles[:,0])*np.cos(angles[:,1])

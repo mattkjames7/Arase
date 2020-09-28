@@ -1,7 +1,7 @@
 import numpy as np
 from .ReadCDF import ReadCDF
 from ..Tools.PSpecCls import PSpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from ..Tools.ListDates import ListDates
 
 def ReadOmni(Date,KeV=True,JoinBins=False):
@@ -53,7 +53,7 @@ def ReadOmni(Date,KeV=True,JoinBins=False):
 
 		#get the time 
 		sEpoch = data['Epoch']
-		sDate,sut = CDFEpochToUT(sEpoch)
+		sDate,sut = TT.CDFEpochtoDate(sEpoch)
 		
 
 		

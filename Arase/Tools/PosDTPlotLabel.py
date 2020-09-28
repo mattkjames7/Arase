@@ -82,7 +82,11 @@ def PosDTPlotLabel(fig,ut,date,fL,fLon,fLat,Seconds=False,TickFreq='default'):
 			# labels[i] = '{:3.1f}\n{:5.1f}\n{:6.1f}\n'.format(L[i],Lat[i],Lon[i])
 		labels[i] = '{:3.1f}\n{:5.1f}\n{:6.1f}\n'.format(L[i],Lat[i],Lon[i])
 		
-		hh,mm,ss,ms = TT.DectoHHMM(tickut[i],True,True,True)
+		hh,mm,ss,ms = TT.DectoHHMM(tickut[i])
+		hh = hh[0]
+		mm = mm[0]
+		ss = ss[0]
+		ms = ms[0]
 		if Seconds:
 			utstr='{:02d}:{:02d}:{:02d}'.format(hh,mm,ss)
 		else:
@@ -102,6 +106,9 @@ def PosDTPlotLabel(fig,ut,date,fL,fLon,fLat,Seconds=False,TickFreq='default'):
 		if tickut[i] == 0.0 or i == 0:
 			
 			yr,mn,dy = TT.DateSplit(tickdate[i])
+			yr = yr[0]
+			mn = mn[0]
+			dy = dy[0]
 			datestr = '{:02d} '.format(np.int(dy))+Months[mn-1]
 			datestr += '\n{:04d}'.format(yr)
 			labels[i] += '\n'+datestr
