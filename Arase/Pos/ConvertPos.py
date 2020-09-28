@@ -6,8 +6,8 @@ from .. import Globals
 import PyGeopack as gp
 from scipy.interpolate import interp1d
 import RecarrayTools as RT
-from ..Tools.CDFEpochToUT import CDFEpochToUT
-from ..Tools.ContUT import ContUT
+import DateTimeTools as TT
+import DateTimeTools as TT
 
 def _MagGeo(xm,ym,zm,Date,ut):
 	r = np.sqrt(xm**2 + ym**2 + zm**2)
@@ -51,7 +51,7 @@ def ConvertPos():
 		if not tmp is None:
 			data,meta = tmp
 			
-			d,t = CDFEpochToUT(data['epoch'])
+			d,t = TT.CDFEpochtoDate(data['epoch'])
 			
 						
 			#get date and time
@@ -94,7 +94,7 @@ def ConvertPos():
 		else:
 			nbad += 1
 	print()
-	out.utc = ContUT(out.Date,out.ut)
+	out.utc = TT.ContUT(out.Date,out.ut)
 	out = out[:p]
 	#save the output file
 	outfile = Globals.DataPath+'Pos/pos.bin'

@@ -2,7 +2,7 @@ import numpy as np
 from .ReadMGF import ReadMGF
 from scipy.interpolate import interp1d
 from scipy.ndimage import uniform_filter
-from ..Tools.ContUT import ContUT
+import DateTimeTools as TT
 
 def InterpObj(Date,Coords='GSE',Smooth=None):
 	'''
@@ -14,7 +14,7 @@ def InterpObj(Date,Coords='GSE',Smooth=None):
 	mag = ReadMGF(Date)
 	
 	#get continuous time
-	mutc = ContUT(mag.Date,mag.ut)
+	mutc = TT.ContUT(mag.Date,mag.ut)
 	
 	#interpolate the bad data
 	good = np.where(np.isfinite(mag['Bx'+Coords]))[0]

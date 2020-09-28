@@ -1,7 +1,7 @@
 import numpy as np
 from .ReadCDF import ReadCDF
 from ..Tools.SpecCls import SpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 
 def Read3D(Date,L=2):
 	'''
@@ -36,9 +36,9 @@ def Read3D(Date,L=2):
 	
 	# #get the time 
 	# out['EpochL'] = data['Epoch_L']
-	# out['DateL'],out['utL'] = CDFEpochToUT(out['EpochL'])
+	# out['DateL'],out['utL'] = TT.CDFEpochtoDate(out['EpochL'])
 	# out['EpochH'] = data['Epoch_H']
-	# out['DateH'],out['utH'] = CDFEpochToUT(out['EpochH'])
+	# out['DateH'],out['utH'] = TT.CDFEpochtoDate(out['EpochH'])
 	
 	# #the energy arrays
 	# out['EnergyL'] = data['FEDO_L_Energy']
@@ -62,8 +62,8 @@ def Read3D(Date,L=2):
 	# out['SpectraH'] = SpecCls(out['DateH'],out['utH'],out['EpochH'],eH,H,Meta=meta['FEDO_H'])
 		
 	data['Epoch'] = data['epoch']
-	data['Date'],data['ut'] = CDFEpochToUT(data['epoch'])
+	data['Date'],data['ut'] = TT.CDFEpochtoDate(data['epoch'])
 	data['EpochSP'] = data['epoch_sp']
-	data['DateSP'],data['utSP'] = CDFEpochToUT(data['epoch_sp'])		
+	data['DateSP'],data['utSP'] = TT.CDFEpochtoDate(data['epoch_sp'])		
 	
 	return data,meta

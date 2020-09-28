@@ -1,7 +1,7 @@
 import numpy as np
 from .Read3D import Read3D
 from ..MGF.ReadMGF import ReadMGF
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from scipy.interpolate import interp1d
 from scipy.ndimage import uniform_filter
 from ..Tools.CalculatePitchAngles import CalculatePitchAngles
@@ -39,7 +39,7 @@ def GetPitchAngle(Date,data=None):
 	angles = data['FEDU_Angle_GSE']*np.pi/180.0
 	
 	#get the time and date
-	date,time = CDFEpochToUT(data['Epoch'])
+	date,time = TT.CDFEpochtoDate(data['Epoch'])
 		
 	#call the function to retrieve pitch angles
 	alpha = CalculatePitchAngles(date,time,angles,None)

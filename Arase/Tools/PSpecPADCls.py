@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from .ContUT import ContUT
-from .DTPlotLabel import DTPlotLabel
 from scipy.interpolate import interp1d
 from .PSDtoCounts import PSDtoCounts
 from .PSDtoFlux import PSDtoFlux
@@ -363,7 +361,7 @@ class PSpecPADCls(object):
 		Date = mode(self.Date)[0][0]
 		
 		#get the utc
-		utc = ContUT(Date,ut)[0]
+		utc = TT.ContUT(Date,ut)[0]
 		
 		#get the 2D spectrum
 		x,y,z,xlabel,ylabel,zlabel = self._GetSpectrum(utc,Maxdt/3600.0,Method,xparam,zparam)
@@ -410,7 +408,7 @@ class PSpecPADCls(object):
 		Date = mode(self.Date)[0][0]
 		
 		#get the utc
-		utc = ContUT(Date,ut)[0]
+		utc = TT.ContUT(Date,ut)[0]
 		
 		#get the 2D spectrum (this could get a little confusing)
 		if xparam == 'alpha':
@@ -729,7 +727,7 @@ class PSpecPADCls(object):
 			ax.set_xlim(self._utlim)
 		else:
 			Date = mode(self.Date)[0][0]
-			utclim = ContUT(np.array([Date,Date]),np.array(ut))
+			utclim = TT.ContUT(np.array([Date,Date]),np.array(ut))
 			ax.set_xlim(utclim)
 			
 		#get the yparameter stuff
@@ -816,7 +814,7 @@ class PSpecPADCls(object):
 			
 				PosDTPlotLabel(ax,self.utc,self.Date,fL,fLon,fLat,TickFreq=TickFreq)
 			else:
-				DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
+				TT.DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
 		if noy:
 			ax.set_ylabel('')
 			ax.yaxis.set_ticks([])
@@ -857,7 +855,7 @@ class PSpecPADCls(object):
 		#check if we need to resize
 		if not ut is None:
 			Date = mode(self.Date)[0][0]
-			utclim = ContUT(np.array([Date,Date]),np.array(ut))
+			utclim = TT.ContUT(np.array([Date,Date]),np.array(ut))
 			ax.set_xlim(utclim)		
 			
 		#now update the axis
@@ -876,7 +874,7 @@ class PSpecPADCls(object):
 		
 			PosDTPlotLabel(ax,self.utc,self.Date,fL,fLon,fLat,TickFreq=TickFreq)
 		else:
-			DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
+			TT.DTPlotLabel(ax,self.utc,self.Date,TickFreq=TickFreq)
 
 
 	def _PlotSpectrogram(self,ax,y0,y1,z,norm,cmap):

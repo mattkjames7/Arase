@@ -4,7 +4,6 @@ from ..MEPe.ReadOmni import ReadOmni as MEP
 from ..HEP.ReadOmni import ReadOmni as HEP 
 from ..XEP.ReadOmni import ReadOmni as XEP 
 from ..Tools.CombinePSpecCls import CombinePSpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
 
 def ReadOmni(Date,Instruments=['LEPe','MEPe','HEP','XEP'],JoinBins=False):
 	'''

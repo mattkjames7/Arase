@@ -1,7 +1,7 @@
 import numpy as np
 from .ReadCDF import ReadCDF
 from ..Tools.SpecCls import SpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from ..Tools.ListDates import ListDates
 
 def ReadEFD(Date):
@@ -69,7 +69,7 @@ def ReadEFD(Date):
 			
 		#get the time 
 		sEpoch = data['Epoch']
-		sDate,sut = CDFEpochToUT(sEpoch)
+		sDate,sut = TT.CDFEpochtoDate(sEpoch)
 		
 		#the frequency arrays
 		sF = data['frequency']

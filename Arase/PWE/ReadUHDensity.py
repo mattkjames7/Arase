@@ -1,6 +1,6 @@
 import numpy as np
 from .ReadCDF import ReadCDF
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from ..Tools.ListDates import ListDates
 
 def ReadUHDensity(Date):
@@ -64,7 +64,7 @@ def ReadUHDensity(Date):
 		out = np.recarray(n,dtype=dtype)
 		
 		#get the data
-		out.Date,out.ut = CDFEpochToUT(data['Epoch'])
+		out.Date,out.ut = TT.CDFEpochtoDate(data['Epoch'])
 		out.Epoch = data['Epoch']
 		out.Density = data['ne_mgf']
 		out.Fuh = data['Fuhr']

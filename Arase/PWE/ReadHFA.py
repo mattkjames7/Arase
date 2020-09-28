@@ -1,7 +1,7 @@
 import numpy as np
 from .ReadCDF import ReadCDF
 from ..Tools.CombineSpecCls import CombineSpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 from .ReadHFAHigh import ReadHFAHigh
 from .ReadHFALow import ReadHFALow
 

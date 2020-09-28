@@ -1,7 +1,7 @@
 import numpy as np
 from .ReadCDF import ReadCDF
 from ..Tools.SpecCls import SpecCls
-from ..Tools.CDFEpochToUT import CDFEpochToUT
+import DateTimeTools as TT
 
 def Read3D(Date):
 	'''
