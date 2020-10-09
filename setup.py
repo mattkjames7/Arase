@@ -27,7 +27,7 @@ setuptools.setup(
 		'PyGeopack',
 		'RecarrayTools',
 		'PyFileIO',
-		'DateTimeTools>=0.0.9',
+		'DateTimeTools>=0.1.1',
 		'cdflib'
 	],
 	include_package_data=True,
