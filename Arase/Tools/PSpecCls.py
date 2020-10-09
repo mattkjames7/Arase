@@ -396,7 +396,9 @@ class PSpecCls(object):
 		FitKappa : bool or str
 			If True - the PSD will be used to fit a Kappa
 			distribution, if 'counts' then the counts will be used 
-			instead.			
+			instead.		
+		Threshold : float
+			Maximum energy to fit distribution function against (keV)
 		
 				
 		'''	
