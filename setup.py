@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="Arase",
-	version="0.0.9",
+	version="0.1.0",
     author="Matthew Knight James",
     author_email="mattkjames7@gmail.com",
     description="A module for downloading and reading Arase spacecraft data.",
@@ -27,7 +27,7 @@ setuptools.setup(
 		'PyGeopack',
 		'RecarrayTools',
 		'PyFileIO',
-		'DateTimeTools>=0.1.1',
+		'DateTimeTools>=0.2.0',
 		'cdflib'
 	],
 	include_package_data=True,
