@@ -154,12 +154,12 @@ spec = Arase.Electrons.ReadOmni(Date)
 e,dJdE,_ = spec.GetSpectrum(Date,ut)
 
 #for velocity and phase space density
-v,f,_ = spec.GetSpectrum(Date,ut,PSD=True)
+v,f,_ = spec.GetSpectrum(Date,ut,xparam='V',yparam='PSD')
 
 #or to plot
 plt.figure(figsize=(8,4))
-ax0 = spec.PlotSpectrum(Date,ut,PSD=False,Split=True,fig=plt,maps=[2,1,0,0],FitKappa=True)
-ax1 = spec.PlotSpectrum(Date,ut,PSD=True,Split=True,fig=plt,maps=[2,1,1,0],FitKappa=True)
+ax0 = spec.PlotSpectrum(Date,ut,xparam='E',yparam='Flux',Split=True,fig=plt,maps=[2,1,0,0])
+ax1 = spec.PlotSpectrum(Date,ut,xparam='V',yparam='PSD',Split=True,fig=plt,maps=[2,1,1,0])
 plt.tight_layout()
 
 #for more information, read the docstrings:

@@ -534,8 +534,8 @@ class PSpecPADCls(object):
 		ax.set_ylabel(ylabel)
 
 		Date = mode(self.Date)[0][0]
-		hh,mm,ss = TT.DectoHHMM(ut,ss=True,Split=True)
-		ax.set_title('{:08d} {:02d}:{:02d}:{:02d} UT, Bin {:d}'.format(Date,hh,mm,ss,Bin))			
+		hh,mm,ss,_ = TT.DectoHHMM(ut)
+		ax.set_title('{:08d} {:02d}:{:02d}:{:02d} UT, Bin {:d}'.format(Date,hh[0],mm[0],ss[0],Bin))			
 				
 		return ax
 						
