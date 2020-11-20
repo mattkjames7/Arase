@@ -11,7 +11,7 @@ from scipy.stats import mode
 import DateTimeTools as TT
 from ..Pos.ReadFieldTraces import ReadFieldTraces
 from .PosDTPlotLabel import PosDTPlotLabel
-
+from .RelVelocity import RelVelocity
 
 defargs = {	'tlabel' : 'UT',
 			'elabel' : '$E$ (keV)',
@@ -145,16 +145,20 @@ class PSpecPADCls(object):
 		self.V = np.sqrt(np.float64(e*2000.0*self.Emid)/self.Mass)
 		self.V0 = np.sqrt(np.float64(e*2000.0*(self.Emin)/self.Mass))
 		self.V1 = np.sqrt(np.float64(e*2000.0*(self.Emax)/self.Mass))
+		
+		self.V = RelVelocity(self.Emid,self.Mass)
+		self.V0 = RelVelocity(self.Emin,self.Mass)
+		self.V1 = RelVelocity(self.Emax/2.0,self.Mass)
 
 		psd = np.zeros(self.Flux.shape,dtype='float64')
 		if np.size(self.V.shape) == 1: 
 			nv = self.V.size
 			for i in range(0,nv):
-				psd[:,i,:] =  np.float64(self.Flux[:,i,:])*(np.float64(self.Mass)/(self.V[i]**2)) * np.float64(10.0/e)
+				psd[:,i,:] =  np.float64(self.Flux[:,i,:])*(np.float64(self.Mass)/(2000*e*np.float64(self.Emid[i]/self.Mass))) * np.float64(10.0/e)
 		else:
 			nv = self.V.shape[-1]
 			for i in range(0,nv):
-				psd[:,i,:] =  (np.float64(self.Flux[:,i,:].T)*(np.float64(self.Mass)/(self.V[:,i]**2)) * np.float64(10.0/e)).T
+				psd[:,i,:] =  (np.float64(self.Flux[:,i,:].T)*(np.float64(self.Mass)/(2000*e*np.float64(self.Emid[:,i]/self.Mass))) * np.float64(10.0/e)).T
 		self.PSD = psd
 			
 	

@@ -127,7 +127,6 @@ def ReadOmni(Date,KeV=True,JoinBins=False):
 			ew[bad] = np.nan
 
 
-
 		if KeV:
 			s = s*1000.0
 		

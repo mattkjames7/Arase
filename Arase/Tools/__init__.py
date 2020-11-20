@@ -13,3 +13,4 @@ from .ListDates import ListDates
 from .SpecCls import SpecCls
 from .PSpecCls import PSpecCls 
 from .PSpecPADCls import PSpecPADCls
+from .RelVelocity import RelVelocity

@@ -22,7 +22,16 @@ def CombinePSpecCls(A):
 	n = np.size(A)
 	
 	#create the initial object
-	out = PSpecCls(SpecType=A[0].SpecType,xlabel=A[0].xlabel,ylabel=A[0].ylabel,zlabel=A[0].zlabel,ylog=A[0]._ylog,zlog=A[0]._zlog,ScaleType=A[0]._ScaleType,nStd=A[0]._nStd)
+	out = PSpecCls(	SpecType=A[0].SpecType,
+					xlabel=A[0].xlabel,
+					ylabele=A[0].ylabele,
+					ylabelv=A[0].ylabelv,
+					zlabelp=A[0].zlabelp,
+					zlabelf=A[0].zlabelf,
+					ylog=A[0]._ylog,
+					zlog=A[0]._zlog,
+					ScaleType=A[0]._ScaleType,
+					nStd=A[0]._nStd)
 	
 	#loop through and add each one
 	for i in range(0,n):

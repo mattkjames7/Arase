@@ -5,22 +5,25 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import DateTimeTools as TT
 from .PosDTPlotLabel import PosDTPlotLabel
 from scipy.interpolate import interp1d
-from .PSDtoCounts import PSDtoCounts
-from .PSDtoFlux import PSDtoFlux
-from .CountstoFlux import CountstoFlux
-from .CountstoPSD import CountstoPSD
-from .FitMaxwellianDist import FitMaxwellianDistCts,FitMaxwellianDist
-from .FitKappaDist import FitKappaDistCts,FitKappaDist
-from .KappaDist import KappaDist
-from .MaxwellBoltzmannDist import MaxwellBoltzmannDist
+from .PSDtoCounts import PSDtoCounts,PSDtoCountsE
+from .PSDtoFlux import PSDtoFlux,PSDtoFluxE
+from .CountstoFlux import CountstoFlux,CountstoFluxE
+from .CountstoPSD import CountstoPSD,CountstoPSDE
+from .FitMaxwellianDist import FitMaxwellianDistCtsE,FitMaxwellianDistE
+from .FitKappaDist import FitKappaDistCtsE,FitKappaDistE
+from .KappaDist import KappaDistE
+from .MaxwellBoltzmannDist import MaxwellBoltzmannDistE
 from ..Pos.ReadFieldTraces import ReadFieldTraces
+from .RelVelocity import RelVelocity
 
 defargs = {	'Meta' : None,
 			'dt' : None,
 			'ew' : None,
 			'xlabel' : 'UT',
-			'ylabel' : 'Energy, (keV)',
-			'zlabel' : '',
+			'ylabele' : 'Energy, (keV)',
+			'ylabelv' : 'V (m s$^{-1}$)',
+			'zlabelf' : 'Flux',
+			'zlabelp' : 'PSD (s$^3$ m$^{-6}$)',
 			'ylog' : False,
 			'zlog' : False, 
 			'ScaleType' : 'range',
@@ -79,8 +82,10 @@ class PSpecCls(object):
 		
 		#and the keywords
 		self.xlabel = kwargs.get('xlabel',defargs['xlabel'])
-		self.ylabel = kwargs.get('ylabel',defargs['ylabel'])
-		self.zlabel = kwargs.get('zlabel',defargs['zlabel'])
+		self.ylabele = kwargs.get('ylabele',defargs['ylabele'])
+		self.ylabelv = kwargs.get('ylabelv',defargs['ylabelv'])
+		self.zlabelf = kwargs.get('zlabelf',defargs['zlabelf'])
+		self.zlabelp = kwargs.get('zlabelp',defargs['zlabelp'])
 		self._ylog = kwargs.get('ylog',defargs['ylog'])
 		self._zlog = kwargs.get('zlog',defargs['zlog'])
 		self._ScaleType = kwargs.get('ScaleType',defargs['ScaleType'])
@@ -154,13 +159,18 @@ class PSpecCls(object):
 		
 	def _CalculatePSD(self,Spec,Energy,dE):
 		e = 1.6022e-19
-		V = np.sqrt(np.float64(e*2000.0*Energy)/self.Mass)
-		V0 = np.sqrt(np.float64(e*2000.0*(Energy-dE/2.0)/self.Mass))
-		V1 = np.sqrt(np.float64(e*2000.0*(Energy+dE/2.0)/self.Mass))
-		self.V.append(V)
-		self.Vew.append(V1-V0)
+		V = RelVelocity(Energy,self.Mass)
+		le = np.log10(Energy)
+		lw = np.log10(dE)
 		
-		psd =  np.float64(Spec)*(np.float64(self.Mass)/(V**2)) * np.float64(10.0/e)
+		E0 = 10**(le - 0.5*lw)
+		E1 = 10**(le + 0.5*lw)
+		V0 = RelVelocity(E0,self.Mass)
+		V1 = RelVelocity(E1,self.Mass)
+		self.V.append(V)
+		self.Vew.append(10**(np.log10(V1)-np.log10(V0)))
+		
+		psd =  np.float64(Spec)*(np.float64(self.Mass)/(2000*e*np.float64(Energy/self.Mass))) * np.float64(10.0/e)
 		self.PSD.append(psd)
 		
 		
@@ -224,16 +234,19 @@ class PSpecCls(object):
 		#add to the total count of spectrograms stored
 		self.n += 1
 	
-	def _GetSpectrum(self,I,sutc,dutc,Method,PSD):
+	def _GetSpectrum(self,I,sutc,dutc,Method,xparam,yparam):
 	
 		#get the appropriate data
 		l = self.Label[I]
 		utc = self.utc[I]
-		if PSD:
+		if xparam == 'V':
 			f = self.V[I]
-			Spec = self.PSD[I]		
 		else:
 			f = self.Energy[I]
+			
+		if yparam == 'PSD':
+			Spec = self.PSD[I]		
+		else:
 			Spec = self.Spec[I]		
 		
 		#find the nearest
@@ -294,7 +307,7 @@ class PSpecCls(object):
 		return e,s,l
 
 	
-	def GetSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,PSD=False):
+	def GetSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,xparam='E',yparam='Flux'):
 		'''
 		This method will return a spectrum from a given time.
 		
@@ -314,13 +327,17 @@ class PSpecCls(object):
 		Split : bool
 			If True, the spectra will be returned as a list, if False,
 			they will be combined to form a single spectrum.
-		PSD : bool
-			If True then phase space density will be returned
+		xparam : str
+			Sets the x-axis of the returned spectrum to be either energy
+			(keV) or velocity (m/s): 'E'|'V'
+		yparam : str
+			Sets the type of spectrum output to either differential
+			energy flux or phase space density: 'Flux'|'PSD'
 		
 		Returns
 		=======
 		energy : float/list
-			Array(s) of energies
+			Array(s) of energies or velocities
 		spec : float/list
 			Array(s) containing specral data
 		labs : list
@@ -339,7 +356,7 @@ class PSpecCls(object):
 		
 		#get the spectra for each element in  self.Spec
 		for i in range(0,self.n):
-			e,s,l = self._GetSpectrum(i,utc,dutc,Method,PSD)
+			e,s,l = self._GetSpectrum(i,utc,dutc,Method,xparam,yparam)
 			if len(s) > 0:
 				spec.append(s)
 				energy.append(e)
@@ -356,8 +373,9 @@ class PSpecCls(object):
 		return energy,spec,labs
 		
 	def PlotSpectrum(self,Date,ut,Method='nearest',Maxdt=60.0,Split=False,
-		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,PSD=False,
-		FitKappa=False,FitMaxwellian=False,nox=False,noy=False,Threshold=0.02):
+		fig=None,maps=[1,1,0,0],color=None,xlog=True,ylog=None,xparam='E',yparam='Flux',
+		FitKappa=False,FitMaxwellian=False,nox=False,noy=False,Erange=(0.0,np.inf),
+		MaxIter=None,n0=10.0,T0=100.0):
 		'''
 		This method will plot a spectrum from a given time.
 		
@@ -377,8 +395,12 @@ class PSpecCls(object):
 		Split : bool
 			If True, the spectra will be returned as a list, if False,
 			they will be combined to form a single spectrum.
-		PSD : bool
-			If True then phase space density will be plotted
+		xparam : str
+			Sets the x-axis of the returned spectrum to be either energy
+			(keV) or velocity (m/s): 'E'|'V'
+		yparam : str
+			Sets the type of spectrum output to either differential
+			energy flux or phase space density: 'Flux'|'PSD'
 		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
 			If None - a new plot is created
 			If an instance of pyplot then a new Axes is created on an existing plot
@@ -397,14 +419,20 @@ class PSpecCls(object):
 			If True - the PSD will be used to fit a Kappa
 			distribution, if 'counts' then the counts will be used 
 			instead.		
-		Threshold : float
-			Maximum energy to fit distribution function against (keV)
-		
+		Erange : tuple
+			Minimum and maximum energy to fit distribution function 
+			against (keV)
+		MaxIter : None,int
+			Maximum number of iterations for the spectrum fitting.
+		n0 : float
+			Initial density required for the spectral fitting (cm^-3).
+		T0 : float
+			Initial temperature for fitting spectrum (MK).
 				
 		'''	
 		
 		#get the spectra
-		energy,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,Split,PSD)
+		energy,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,Split,xparam,yparam)
 		
 		
 		#create the figure
@@ -442,12 +470,15 @@ class PSpecCls(object):
 			ax.set_yscale('log')
 			
 		#set the axis labels
-		if PSD:
-			ax.set_xlabel('V (m s$^{-1}$)')
-			ax.set_ylabel('PSD (s$^3$ m$^{-6}$)')
+		if xparam == 'V':
+			ax.set_xlabel(self.ylabelv)
 		else:
-			ax.set_xlabel(self.ylabel)
-			ax.set_ylabel(self.zlabel)
+			ax.set_xlabel(self.ylabele)
+			
+		if yparam == 'PSD':
+			ax.set_ylabel(self.zlabelp)
+		else:
+			ax.set_ylabel(self.zlabelf)
 			
 		#turn axes off when needed
 		if nox:
@@ -464,52 +495,60 @@ class PSpecCls(object):
 			
 			
 			#get the combined spectra
-			v,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,False,True)
+			E,spec,labs = self.GetSpectrum(Date,ut,Method,Maxdt,False,'E','PSD')
 			e = 1.6022e-19
-			E = 0.5*self.Mass*(v**2)/(e*1000)
-
+			v = RelVelocity(E,self.Mass)
+		
 			#convert to counts
-			C = PSDtoCounts(v,spec,self.Mass)
-			
+			C = PSDtoCountsE(E,spec,self.Mass)
+
 			#apply the threshold in keV
-			use = np.where(E <= Threshold)[0]
+			use = np.where((E <= Erange[1]) & (E >= Erange[0]))[0]
+
 			v = v[use]
 			E = E[use]
 			C = C[use]
 			spec = spec[use]
 			
-
+			if xparam == 'V':
+				x = v
+			else:
+				x = E
+					
 			#fit spectrum
 			if (not FitKappa is False):
 				if FitKappa is 'counts':
-					nk,Tk,K,statk = FitKappaDistCts(v,C,1.0e7,1.0e6,self.Mass,Verbose=True)
+					nk,Tk,K,statk = FitKappaDistCtsE(E,C,n0*1e6,T0*1e6,self.Mass,Verbose=True,MaxIter=MaxIter)
 				else:
-					nk,Tk,K,statk = FitKappaDist(v,spec,1.0e7,1.0e6,self.Mass,Verbose=True)
-				fk = KappaDist(nk,v,Tk,self.Mass,K)
-				if not PSD:
-					fk = PSDtoFlux(v,fk,self.Mass)
-					ax.plot(E,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
+					nk,Tk,K,statk = FitKappaDistE(E,spec,n0*1e6,T0*1e6,self.Mass,Verbose=True,MaxIter=MaxIter)
+				fk = KappaDistE(nk,E,Tk,self.Mass,K)
+				if yparam == 'Flux':
+					y = PSDtoFluxE(E,fk,self.Mass)
 				else:
-					ax.plot(v,fk,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
+					y = fk
+				
+				ax.plot(x,y,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
+
 			if (not FitMaxwellian is False):
 				if FitMaxwellian is 'counts':
-					nm,Tm,statm = FitMaxwellianDistCts(v,C,1.0e7,1.0e6,self.Mass)
+					nm,Tm,statm = FitMaxwellianDistCtsE(E,C,n0*1e6,T0*1e6,self.Mass,MaxIter=MaxIter)
 				else:
-					nm,Tm,statm = FitMaxwellianDist(v,spec,1.0e7,1.0e6,self.Mass,Verbose=True)
-				fm = MaxwellBoltzmannDist(nm,v,Tm,self.Mass)
-				if not PSD:
-					fm = PSDtoFlux(v,fm,self.Mass)
-					ax.plot(E,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
+					nm,Tm,statm = FitMaxwellianDistE(E,spec,n0*1e6,T0*1e6,self.Mass,Verbose=True,MaxIter=MaxIter)
+				fm = MaxwellBoltzmannDistE(nm,E,Tm,self.Mass)
+				if yparam == 'Flux':
+					y = PSDtoFluxE(E,fm,self.Mass)
 				else:
-					ax.plot(v,fm,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
-
+					y = fm
+				
+				ax.plot(x,y,color='blue',linestyle='--',label=r'M-B Fit: $n$=' + '{:5.2f}'.format(nm/1e6)+r' cm$^{-3}$,'+'\n'+'$T$='+'{:5.2f}'.format(Tm/1e6)+r' MK')
+	
 		ax.legend(fontsize=8)
 			
 		return ax
 				
 		
 	def Plot(self,Date=None,ut=[0.0,24.0],fig=None,maps=[1,1,0,0],ylog=None,scale=None,zlog=None,
-			cmap='gnuplot',PSD=False,nox=False,noy=False,TickFreq='auto',PosAxis=True):
+			cmap='gnuplot',yparam='E',zparam='Flux',nox=False,noy=False,TickFreq='auto',PosAxis=True):
 		'''
 		Plots the spectrogram
 		
@@ -526,8 +565,12 @@ class PSpecCls(object):
 			2-element start and end times for the plot, where each 
 			element is the time in hours sinsce the start fo the day,
 			e.g. 17:30 == 17.5.
-		PSD : bool
-			If True then phase space density will be plotted
+		yparam : str
+			Sets the y-axis of the plot to be either energy
+			(keV) or velocity (m/s): 'E'|'V'
+		zparam : str
+			Sets the type of spectrum to either differential
+			energy flux or phase space density: 'Flux'|'PSD'
 		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
 			If None - a new plot is created
 			If an instance of pyplot then a new Axes is created on an existing plot
@@ -571,25 +614,30 @@ class PSpecCls(object):
 			ax.set_xlim(utclim)
 		if ylog is None:
 			ylog = self._ylog
-		if PSD:
+
+		#get the yparameter stuff
+		if yparam == 'E':
+			if ylog:
+				ax.set_yscale('log')
+				ax.set_ylim(self._logelim)
+			else:
+				ax.set_ylim(self._elim)
+		elif yparam == 'V':
 			if ylog:
 				ax.set_yscale('log')
 				ax.set_ylim(self._logvlim)
 			else:
 				ax.set_ylim(self._vlim)
 		else:
-			if ylog:
-				ax.set_yscale('log')
-				ax.set_ylim(self._logelim)
-			else:
-				ax.set_ylim(self._elim)
-			
+			return		
+
+		
 		#and labels
 		ax.set_xlabel(self.xlabel)
-		if PSD:
-			ax.set_ylabel('V (m s$^{-1}$)')
+		if yparam == 'V':
+			ax.set_ylabel(self.ylabelv)
 		else:
-			ax.set_ylabel(self.ylabel)
+			ax.set_ylabel(self.ylabele)
 	
 
 
@@ -597,13 +645,13 @@ class PSpecCls(object):
 		#get color scale
 		if zlog is None:
 			zlog = self._zlog
-		if PSD:
+		if zparam == 'PSD':
 			if scale is None:
 				if zlog:
 					scale = self._psdlogscale
 				else:
 					scale = self._psdscale
-		else:
+		elif zparam == 'Flux':
 			if scale is None:
 				if zlog:
 					scale = self._logscale
@@ -616,7 +664,7 @@ class PSpecCls(object):
 			
 		#create plots
 		for i in range(0,self.n):
-			tmp = self._PlotSpectrogram(ax,i,norm,cmap,PSD)
+			tmp = self._PlotSpectrogram(ax,i,norm,cmap,yparam,zparam)
 			if i == 0:
 				sm = tmp
 
@@ -661,10 +709,10 @@ class PSpecCls(object):
 		cax = divider.append_axes("right", size="2.5%", pad=0.05)
 
 		cbar = fig.colorbar(sm,cax=cax) 
-		if PSD:
-			cbar.set_label('PSD (s$^3$ m$^{-6}$)')		
+		if zparam == 'PSD':
+			cbar.set_label(self.zlabelp)		
 		else:
-			cbar.set_label(self.zlabel)		
+			cbar.set_label(self.zlabelf)		
 		self.currax = ax
 		return ax
 		
@@ -731,10 +779,12 @@ class PSpecCls(object):
 			TT.DTPlotLabel(ax,tutc,tdate,TickFreq=TickFreq)		
 		
 
-	def _PlotSpectrogram(self,ax,I,norm,cmap,PSD):
+	def _PlotSpectrogram(self,ax,I,norm,cmap,yparam,zparam):
 		'''
 		This will plot a single spectrogram (multiple may be stored in
 		this object at any one time
+		
+		
 		
 		'''
 		#get the appropriate data
@@ -744,13 +794,16 @@ class PSpecCls(object):
 		dt = self.dt[I]
 		ew = self.ew[I]
 		
-		if PSD:
+		if yparam == 'V':
 			ew = self.Vew[I]
 			e = self.V[I]
-			Spec = self.PSD[I]		
-		else:
+		elif yparam == 'E':	
 			ew = self.ew[I]
 			e = self.Energy[I]
+		
+		if zparam == 'PSD'	:
+			Spec = self.PSD[I]		
+		elif zparam == 'Flux':
 			Spec = self.Spec[I]	
 		
 		#get the energy band limits
@@ -760,6 +813,9 @@ class PSpecCls(object):
 		lw = np.log10(ew)
 		e0 = 10**(le - 0.5*lw)
 		e1 = 10**(le + 0.5*lw)
+
+		self.e0 = e0
+		self.e1 = e1
 
 		#get the ut array limits
 		t0 = utc

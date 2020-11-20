@@ -13,7 +13,7 @@ def _MagGeo(xm,ym,zm,Date,ut):
 	r = np.sqrt(xm**2 + ym**2 + zm**2)
 	mlon = np.arctan2(ym,xm)*180.0/np.pi
 	mlat = np.arctan2(zm,np.sqrt(ym**2 + xm**2))*180.0/np.pi
-	glon,glat = gp.MAGtoGEO(mlon,mlat,Date,ut)
+	glon,glat = gp.MAGtoGEOLL(mlon,mlat,Date,ut)
 	xg = r*np.cos(mlon)*np.cos(mlat)
 	yg = r*np.sin(mlon)*np.cos(mlat)
 	zg = r*np.sin(mlat)
