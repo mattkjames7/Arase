@@ -1,3 +1,7 @@
+__version__ = '0.1.1'
+
+
+
 from . import Pos
 from . import PWE
 from . import Tools
@@ -10,3 +14,5 @@ from . import HEP
 from . import XEP
 from . import Electrons
 from . import Ions
+
+

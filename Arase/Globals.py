@@ -17,3 +17,4 @@ PosDtype = [('Date','int32'),('ut','float32'),('utc','float64'),
 		('Xgsm','float32'),('Ygsm','float32'),('Zgsm','float32'),
 		('Xsm','float32'),('Ysm','float32'),('Zsm','float32')]
 Pos = None
+

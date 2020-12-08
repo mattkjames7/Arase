@@ -30,7 +30,7 @@ def ReadOmni(Date,KeV=True,JoinBins=False):
 		
 
 	'''		
-	
+	print('The keyword "KeV" will be removed in a future version of Arase.LEPe.ReadOmni')
 	#get a list of the dates to load		
 	if np.size(Date) == 1:
 		dates = np.array([Date])

@@ -5,7 +5,7 @@ from .FluxtoCounts import FluxtoCounts
 from .FluxtoPSD import FluxtoPSD
 from .PSDtoCounts import PSDtoCounts
 from .PSDtoFlux import PSDtoFlux
-from .MaxwellBoltzmannDist import MaxwellBoltzmannDist,MaxwellBoltzmannDistCts
+from .MaxwellBoltzmannDist import MaxwellBoltzmannDist,MaxwellBoltzmannDistCts,MaxwellBoltzmannDistE
 from .KappaDist import KappaDist,KappaDistCts
 from .FitMaxwellianDist import FitMaxwellianDist,FitMaxwellianDistCts
 from .FitKappaDist import FitKappaDist,FitKappaDistCts
