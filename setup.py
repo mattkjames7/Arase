@@ -10,9 +10,8 @@ def getversion():
 	read the version string from __init__
 	
 	'''
-	
 	#get the init file path
-	thispath = os.path.dirname(__file__)+'/'
+	thispath = os.path.abspath(os.path.dirname(__file__))+'/'
 	initfile = thispath + 'Arase/__init__.py'
 	
 	#read the file in
@@ -24,8 +23,8 @@ def getversion():
 	version = 'unknown'
 	for l in lines:
 		if '__version__' in l:
-			s = s.split('=')
-			version = s.strip().strip('"').strip("'")
+			s = l.split('=')
+			version = s[-1].strip().strip('"').strip("'")
 			break
 	return version
 	
