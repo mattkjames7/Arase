@@ -111,12 +111,12 @@ class SpecCls(object):
 		#set the interval between each measurement (assuming ut is start 
 		#of interval and that ut + dt is the end
 		if dt is None:
-			dt = (ut[1:] - ut[:-1])
+			dt = (ut[1:] - ut[:-1])*3600.0
 			u,c = np.unique(dt,return_counts=True)
 			dt = u[np.where(c == c.max())[0][0]]
 		
 		#convert it to an array the same length as ut
-		dt = np.zeros(ut.size,dtype='float32') + dt
+		dt = np.zeros(ut.size,dtype='float32') + dt/3600.0
 		return dt
 		
 
@@ -142,7 +142,7 @@ class SpecCls(object):
 		bw : None or float
 			Width of the frequency bins
 		dt : None or float
-			duration of each spectrum
+			duration of each spectrum in units of seconds!
 		Meta : dict
 			Meta data from CDF - not used
 		Label : str
