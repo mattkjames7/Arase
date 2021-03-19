@@ -690,7 +690,10 @@ class PSpecPADCls(object):
 			element is the time in hours sinsce the start fo the day,
 			e.g. 17:30 == 17.5.
 		Bin : int
-			Index of pitch angle bin to use
+			Index of pitch angle bin to use - scan be a scalar or an 
+			array. If Bin is an array of two elements, then it will be 
+			treated as a range; if there are more than two then each one
+			will be used. Fluxes from multiple bins will be summed.
 		yparam : str
 			One dimension of the returned spectrum
 			'E' - Energy
@@ -718,7 +721,22 @@ class PSpecPADCls(object):
 			If True, no labels or tick marks are drawn for the y-axis
 		'''
 		
-		
+		#get the list of bins to use
+		if hasattr(Bin,'__iter__'):
+			if np.size(Bin) == 2:
+				bins = np.arange(Bin[0],Bin[1]+1)
+				binstr = 'Bins {:d} to {:d}'.format(bins[0],bins[-1])
+			else:
+				bins = np.array(Bins)
+				if np.size(bins) == 1:
+					binstr = 'Bin {:d}'.format(bins[0])
+				else:
+					binstr = ['{:d}, '.format(bins[i]) for i in range(bins.size-1)]
+					binstr.append('and {:d}'.format(bins[-1]))
+					binstr = 'Bins '+''.join(binstr)
+		else:
+			bins = np.array([Bin])
+			binstr = 'Bin {:d}'.format(Bin)
 		
 		#create the plot
 		if fig is None:
@@ -736,7 +754,8 @@ class PSpecPADCls(object):
 			
 		#get the yparameter stuff
 		if yparam == 'E':
-			title = r'$\alpha$ Bin {:d} ({:4.1f} - {:4.1f}'.format(Bin,self.Alpha[Bin],self.Alpha[Bin+1])+'$^{\circ}$)'
+			Arange = [self.Alpha[bins[0]],self.Alpha[bins[-1]+1]]
+			title = r'$\alpha$ {:s} ({:4.1f} - {:4.1f}'.format(binstr,Arange[0],Arange[1])+'$^{\circ}$)'
 			if ylog is None:
 				ylog = self._elog
 			ax.set_ylim(self._elim)
@@ -744,7 +763,8 @@ class PSpecPADCls(object):
 			y1 = self.Emax
 			ax.set_ylabel(self.elabel)
 		elif yparam == 'V':
-			title = r'$\alpha$ Bin {:d} ({:4.1f} - {:4.1f}'.format(Bin,self.Alpha[Bin],self.Alpha[Bin+1])+'$^{\circ}$)'
+			Arange = [self.Alpha[bins[0]],self.Alpha[bins[-1]+1]]
+			title = r'$\alpha$ {:s} ({:4.1f} - {:4.1f}'.format(binstr,Arange[0],Arange[1])+'$^{\circ}$)'
 			if ylog is None:
 				ylog = self._vlog
 			ax.set_ylim(self._vlim)
@@ -752,7 +772,9 @@ class PSpecPADCls(object):
 			y1 = self.V1
 			ax.set_ylabel(self.vlabel)
 		elif yparam == 'alpha':
-			title = '$E$/$V$ Bin {:d}'.format(Bin)
+			Energies = np.append(self.Emin[bins],self.Emax[bins])
+			Erange = [np.nanmin(Energies),np.nanmax(Energies)]
+			title = '$E$/$V$ {:s} ({:4.1f} - {:4.1f} keV)'.format(binstr,Erange[0],Erange[1])
 			ylog = False
 			ax.set_ylim([0.0,180.0])
 			y0 = self.Alpha[:-1]
@@ -770,9 +792,9 @@ class PSpecPADCls(object):
 		#get z stuff
 		if zparam == 'Flux':
 			if yparam == 'alpha':
-				z = self.Flux[:,Bin,:]
+				z = np.nansum(self.Flux[:,bins,:],axis=1)
 			else:
-				z = self.Flux[:,:,Bin]
+				z = np.nansum(self.Flux[:,:,bins],axis=2)
 			
 			zlabel = self.flabel
 			if zlog is None:
@@ -781,9 +803,9 @@ class PSpecPADCls(object):
 				scale = self._scale
 		elif zparam == 'PSD':
 			if yparam == 'alpha':
-				z = self.PSD[:,Bin,:]
+				z = np.nansum(self.PSD[:,bins,:],axis=1)
 			else:
-				z = self.PSD[:,:,Bin]
+				z = np.nansum(self.PSD[:,:,bins],axis=2)
 			zlabel = self.plabel
 			if zlog is None:
 				zlog = self._plog

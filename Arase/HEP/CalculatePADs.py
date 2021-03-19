@@ -68,7 +68,7 @@ def CalculatePADs(Date,na=18,Verbose=True):
 		ne = data[fenergy].shape[1]
 		
 		#get the dates/times
-		Date,ut = TT.CDFEpochToDate(epoch)
+		Date,ut = TT.CDFEpochtoDate(epoch)
 		utc = TT.ContUT(Date,ut)
 		
 		#get the energy arrays (shape: (nt,ne))
