@@ -11,7 +11,7 @@ def SavePAD(Date,path,spec,Overwrite=False):
 	outpath = path + '{:08d}/'.format(Date)
 	if not os.path.isdir(outpath):
 		os.system('mkdir -pv '+outpath)
-		os.system('chmod 776 '+outpath)
+		os.system('chmod 777 '+outpath)
 	#create a list of spectra
 	keys = list(spec.keys())
 	
