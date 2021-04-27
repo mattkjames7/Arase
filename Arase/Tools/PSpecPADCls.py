@@ -12,6 +12,9 @@ import DateTimeTools as TT
 from ..Pos.ReadFieldTraces import ReadFieldTraces
 from .PosDTPlotLabel import PosDTPlotLabel
 from .RelVelocity import RelVelocity
+from .ColorMap import jetish
+import matplotlib.patheffects as path_effects
+from scipy.stats import mode
 
 defargs = {	'tlabel' : 'UT',
 			'elabel' : '$E$ (keV)',
@@ -125,12 +128,27 @@ class PSpecPADCls(object):
 		Process the energy bins
 		
 		'''
-		
+
+
 		#calculate the middle (logarithmically)
 		lemin = np.log10(self.Emin)
 		lemax = np.log10(self.Emax)
 		self.Emid = 10.0**(0.5*(lemin + lemax))
 
+		
+		#sort everything in ascending order of energy
+		if len(self.Emid.shape) == 2:
+			m,_ = mode(self.Emid,axis=0)
+			srt = np.argsort(m[0])
+			self.Emid = self.Emid[:,srt]
+			self.Emin = self.Emin[:,srt]
+			self.Emax = self.Emax[:,srt]
+		else:
+			srt = np.argsort(self.Emid)
+			self.Emid = self.Emid[srt]
+			self.Emin = self.Emin[srt]
+			self.Emax = self.Emax[srt]		
+		self.Flux = self.Flux[:,srt,:]
 		
 		
 	def _ProcessDT(self):
@@ -675,11 +693,70 @@ class PSpecPADCls(object):
 		ax.set_title('{:08d} {:02d}:{:02d}:{:02d} UT'.format(Date,hh,mm,ss))	
 						
 		return ax
-				
+	
+	def PlotSpectrogramStack(self,Bins=[[0,3],[4,7],[8,11],[12,15],[16,19],[20,23],[24,27]],
+			ut=None,fig=None,scale=[1e3,1e9],cmap='gnuplot',zparam='Flux'):
+		'''
+		Plot a stack of spectrograms.
+		
+		'''			
+		#find number of axes to create
+		Bins = np.array(Bins)
+		na = Bins.shape[0]
+		
+		#create the figure
+		fig = plt
+		fig.figure(figsize=(11,8))
+		
+		#create blank axes
+		cf = fig.gcf()
+		axb = plt.subplot2grid((1,1),(0,0))
+		axb.spines['top'].set_color('none')
+		axb.spines['bottom'].set_color('none')
+		axb.spines['left'].set_color('none')
+		axb.spines['right'].set_color('none')
+		axb.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
+		
+		if cmap == 'jetish':
+			cmap = jetish
+		sm = plt.cm.ScalarMappable(cmap=cmap, norm=colors.LogNorm(vmin=scale[0], vmax=scale[1]))
+		sm._A = []
+		
+		
+		#plot each one
+		ax = []
+		for i in range(0,na):
+			nox = i != 0
+			tmpax = self.PlotSpectrogram(Bins[i],ut=ut,fig=fig,
+					maps=[1,na,0,na-i-1],cmap=cmap,scale=scale,yparam='alpha',
+					nox=nox,ColorBar=False)
+			title = tmpax.get_title()
+			tmpax.set_title('')
+			tmpax.set_ylabel(r'$\alpha$ ($^\circ$)')
+			txt = tmpax.text(0.01,0.9,title,color='black',ha='left',va='center',transform=tmpax.transAxes)
+			txt.set_path_effects([path_effects.Stroke(linewidth=2,foreground='white'),path_effects.Normal()])
+			ax.append(tmpax)
+		
+		
+		fig.subplots_adjust(hspace=0.0,right=0.8,top=0.95,bottom=0.15)
+
+		#spax = fig.gca()
+		p = axb.get_position().extents
+		
+		cbar_ax = cf.add_axes([0.85, 0.1*(p[3]-p[1]) + p[1], 0.025, 0.8*(p[3]-p[1])])
+		cbar=fig.colorbar(sm, cax=cbar_ax)
+		if zparam == 'PSD':
+			zlabel = defargs['plabel']
+		else:
+			zlabel = defargs['flabel']
+		cbar.set_label(zlabel)		
+		
+		return ax
 		
 	def PlotSpectrogram(self,Bin,ut=None,fig=None,maps=[1,1,0,0],
 			yparam='E',zparam='Flux',ylog=None,scale=None,zlog=None,
-			cmap='gnuplot',nox=False,noy=False,TickFreq='auto',PosAxis=True):
+			cmap='gnuplot',nox=False,noy=False,TickFreq='auto',
+			PosAxis=True,ColorBar=True):
 		'''
 		Plots the spectrogram
 		
@@ -737,7 +814,8 @@ class PSpecPADCls(object):
 		else:
 			bins = np.array([Bin])
 			binstr = 'Bin {:d}'.format(Bin)
-		
+
+
 		#create the plot
 		if fig is None:
 			fig = plt
@@ -772,9 +850,12 @@ class PSpecPADCls(object):
 			y1 = self.V1
 			ax.set_ylabel(self.vlabel)
 		elif yparam == 'alpha':
-			Energies = np.append(self.Emin[bins],self.Emax[bins])
+			if len(self.Emin.shape) == 2:
+				Energies = self.Emid[:,bins]
+			else:
+				Energies = self.Emid[bins]
 			Erange = [np.nanmin(Energies),np.nanmax(Energies)]
-			title = '$E$/$V$ {:s} ({:4.1f} - {:4.1f} keV)'.format(binstr,Erange[0],Erange[1])
+			title = '$E$/$V$ {:s} ({:5.2f} - {:5.2f} keV)'.format(binstr,Erange[0],Erange[1])
 			ylog = False
 			ax.set_ylim([0.0,180.0])
 			y0 = self.Alpha[:-1]
@@ -817,7 +898,10 @@ class PSpecPADCls(object):
 			norm = colors.LogNorm(vmin=scale[0],vmax=scale[1])
 		else:
 			norm = colors.Normalize(vmin=scale[0],vmax=scale[1])
-			
+		if cmap == 'jetish':
+			cmap = jetish
+		
+		
 		#create plots
 		sm = self._PlotSpectrogram(ax,y0,y1,z,norm,cmap)
 
@@ -849,11 +933,12 @@ class PSpecPADCls(object):
 	
 			
 		#colorbar
-		divider = make_axes_locatable(ax)
-		cax = divider.append_axes("right", size="2.5%", pad=0.05)
+		if ColorBar:
+			divider = make_axes_locatable(ax)
+			cax = divider.append_axes("right", size="2.5%", pad=0.05)
 
-		cbar = fig.colorbar(sm,cax=cax) 
-		cbar.set_label(zlabel)	
+			cbar = fig.colorbar(sm,cax=cax) 
+			cbar.set_label(zlabel)	
 		self.currax = ax	
 		return ax
 
