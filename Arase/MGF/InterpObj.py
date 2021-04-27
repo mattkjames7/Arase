@@ -26,15 +26,15 @@ def InterpObj(Date,Coords='GSE',Smooth=None):
 	if not Smooth is None:
 	
 		mag['Bx'+Coords][bad] = fx(mutc[bad])
-		mag['Bx'+Coords][bad] = fy(mutc[bad])
-		mag['Bx'+Coords][bad] = fz(mutc[bad])
+		mag['By'+Coords][bad] = fy(mutc[bad])
+		mag['Bz'+Coords][bad] = fz(mutc[bad])
 			
 
 
 		#interpolation objects
 		fx = interp1d(mutc,uniform_filter(mag['Bx'+Coords],Smooth),bounds_error=False,fill_value='extrapolate')
-		fy = interp1d(mutc,uniform_filter(mag['Bx'+Coords],Smooth),bounds_error=False,fill_value='extrapolate')
-		fz = interp1d(mutc,uniform_filter(mag['Bx'+Coords],Smooth),bounds_error=False,fill_value='extrapolate')
+		fy = interp1d(mutc,uniform_filter(mag['By'+Coords],Smooth),bounds_error=False,fill_value='extrapolate')
+		fz = interp1d(mutc,uniform_filter(mag['Bz'+Coords],Smooth),bounds_error=False,fill_value='extrapolate')
 		
 		
 	return fx,fy,fz

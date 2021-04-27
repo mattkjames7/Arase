@@ -11,7 +11,7 @@ def SavePAD(Date,path,spec,Overwrite=False):
 	outpath = path + '{:08d}/'.format(Date)
 	if not os.path.isdir(outpath):
 		os.system('mkdir -pv '+outpath)
-		
+		os.system('chmod 776 '+outpath)
 	#create a list of spectra
 	keys = list(spec.keys())
 	
@@ -32,3 +32,6 @@ def SavePAD(Date,path,spec,Overwrite=False):
 		pf.ArrayToFile(tmp['Alpha'],'float32',f)
 		pf.ArrayToFile(tmp['Flux'],'float32',f)
 		f.close()
+
+		#change permissions
+		os.system('chmod 666 '+fname)
