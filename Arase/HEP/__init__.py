@@ -9,3 +9,4 @@ from .SavePADs import SavePADs
 from .ReadIndex import ReadIndex
 from .ReadPAD import ReadPAD
 from .DataAvailability import DataAvailability
+from .PADAvailability import PADAvailability
