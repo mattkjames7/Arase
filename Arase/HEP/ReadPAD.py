@@ -22,8 +22,13 @@ def ReadPAD(Date,SpecType,ReturnSpecObject=True):
 	path = Globals.DataPath + 'HEP/PAD/'
 	
 	pad = RPAD(Date,path,SpecType)
+	
+	if SpecType == 'eFluxL':
+		Inst = 'HEPL'
+	else:
+		Inst = 'HEPH'
 
 	if ReturnSpecObject:
-		return PSpecPADCls(pad)
+		return PSpecPADCls(pad,Inst)
 	else:
 		return pad

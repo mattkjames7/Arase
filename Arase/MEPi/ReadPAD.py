@@ -24,6 +24,6 @@ def ReadPAD(Date,SpecType,ReturnSpecObject=True):
 	pad = RPAD(Date,path,SpecType)
 
 	if ReturnSpecObject:
-		return PSpecPADCls(pad)
+		return PSpecPADCls(pad,'MEPi')
 	else:
 		return pad

@@ -63,7 +63,7 @@ def CalculatePADs(Date,na=18,Verbose=True):
 		
 		#get the dates/times
 		Date,ut = TT.CDFEpochtoDate(data['epoch'])
-		utc = ContUT(Date,ut)
+		utc = TT.ContUT(Date,ut)
 		
 		#get the energy arrays (shape: (nt,ne))
 		Emid = data[fenergy]

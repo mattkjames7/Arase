@@ -36,9 +36,17 @@ ParticleMass = { 	'e' : 9.10938356e-31,
 					'He' : 4.002602*amu,
 					'O' : 15.999*amu,
 					'O2' : 15.999*amu*2}
+	
+#list of bins to group together for the stack plot				
+SpecBins = {	'LEPe' : [[0,3],[4,7],[8,11],[12,15],[16,19],[20,23],[24,27]],
+				'LEPi' : [[0,3],[4,7],[8,11],[12,15],[16,19],[20,23],[24,27],[28,31]],
+				'MEPe' : [[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12,13],[14,15]],
+				'MEPi' : [[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12,13],[14,15]],
+				'HEPL'  : [[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12,13],[14,15]], 
+				'HEPH'  : [[0,2],[2,3],[4,5],[6,7],[8,9],[10,10]], }
 
 class PSpecPADCls(object):
-	def __init__(self,PADSpec,SpecType='e',**kwargs):
+	def __init__(self,PADSpec,Instrument,SpecType='e',**kwargs):
 		'''
 		An object for storing and plotting particle spectral data.
 		
@@ -78,6 +86,7 @@ class PSpecPADCls(object):
 		self.Mass = ParticleMass.get(SpecType,9.10938356e-31)
 		self.n = 0
 		self.SpecType = SpecType
+		self.Instrument = Instrument
 
 		#store the input variables by appending to the existing lists
 		self.Date = PADSpec['Date']
@@ -694,12 +703,41 @@ class PSpecPADCls(object):
 						
 		return ax
 	
-	def PlotSpectrogramStack(self,Bins=[[0,3],[4,7],[8,11],[12,15],[16,19],[20,23],[24,27]],
+	def PlotSpectrogramStack(self,Bins=None,
 			ut=None,fig=None,scale=[1e3,1e9],cmap='gnuplot',zparam='Flux'):
 		'''
 		Plot a stack of spectrograms.
 		
+		Inputs
+		======
+		Bins : list
+			List of bin ranges to combine, if set to None then a default
+			set of bin lists will be used.
+		ut : list/tuple
+			2-element start and end times for the plot, where each 
+			element is the time in hours sinsce the start fo the day,
+			e.g. 17:30 == 17.5.
+		fig : None, matplotlib.pyplot or matplotlib.pyplot.Axes instance
+			If None - a new plot is created
+			If an instance of pyplot then a new Axes is created on an existing plot
+			If Axes instance, then plotting is done on existing Axes
+		scale : list
+			2-element list or tuple containing the minimum and maximum
+			extents of the color scale
+		cmap : str
+			String containing the name of the colomap to use
+		zparam : str
+			'Flux'|'PSD' - type of spectrum to return.
+
+		Returns
+		=======
+		ax : list
+			List of Axes instances
+		
 		'''			
+		if Bins is None:
+			Bins = SpecBins[self.Instrument]
+		
 		#find number of axes to create
 		Bins = np.array(Bins)
 		na = Bins.shape[0]
