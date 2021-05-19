@@ -46,7 +46,7 @@ SpecBins = {	'LEPe' : [[0,3],[4,7],[8,11],[12,15],[16,19],[20,23],[24,27]],
 				'HEPH'  : [[0,2],[2,3],[4,5],[6,7],[8,9],[10,10]], }
 
 class PSpecPADCls(object):
-	def __init__(self,PADSpec,Instrument,SpecType='e',**kwargs):
+	def __init__(self,PADSpec,Instrument,SpecType='e',Mirror=None,**kwargs):
 		'''
 		An object for storing and plotting particle spectral data.
 		
@@ -97,6 +97,11 @@ class PSpecPADCls(object):
 		self.Alpha = PADSpec['Alpha']
 		self.Flux = PADSpec['Flux']
 
+		if not Mirror is None:
+			self.AltN = Mirror['AltN']
+			self.AltS = Mirror['AltS']
+			self.BMirror = Mirror['Bm']
+			self.B0 = Mirror['B0']
 	
 		#Process the energy bins
 		self._ProcessEnergy()
