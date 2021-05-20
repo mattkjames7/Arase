@@ -2,7 +2,7 @@ import numpy as np
 import os
 import PyFileIO as pf
 
-def SaveMirrorAlt(Date,path,Alt,AltMid,Bm,BmMid,B0,Overwrite=False):
+def SaveMirrorAlt(Date,path,Mirror,Overwrite=False):
 	'''
 	Save mirror altitudes and fields to go with the pitch angle 
 	distribution data
@@ -21,11 +21,14 @@ def SaveMirrorAlt(Date,path,Alt,AltMid,Bm,BmMid,B0,Overwrite=False):
 		return
 	print('saving file: {:s}'.format(fname))
 	f = open(fname,'wb')
-	pf.ArrayToFile(Alt,'float32',f)
-	pf.ArrayToFile(AltMid,'float32',f)
-	pf.ArrayToFile(Bm,'float32',f)
-	pf.ArrayToFile(BmMid,'float32',f)
-	pf.ArrayToFile(B0,'float32',f)
+	keys = ['Date','ut','utc','Alt','AltMid','Bm','BmMid','B0',
+			'AlphaN','AlphaS','BaltN','BaltS','LCAlt']
+	for k in keys:
+		if k == 'utc':
+			dtype = 'float64'
+		else:
+			dtype = 'float32'
+		pf.ArrayToFile(Mirror[k],dtype,f)
 
 	f.close()
 

@@ -6,6 +6,7 @@ import DateTimeTools as TT
 from scipy.interpolate import interp1d
 from ..MGF.ReadMGF import ReadMGF
 from .MirrorAlt import MirrorAlt
+from .LossCone import LossCone
 
 def CalculateMirrorAlt(utc,na):
 	'''
@@ -48,11 +49,30 @@ def CalculateMirrorAlt(utc,na):
 	BmMid = MirrorField(B0,alphac)
 	
 	#field traces
-	T = gp.TraceField(x,y,z,Date,ut,Model='T96',CoordIn='GSE',CoordOut='SM',Verbose=True)
+	T = gp.TraceField(x,y,z,Date,ut,Model='T96',CoordIn='GSE',CoordOut='SM',Verbose=True,Alt=0.0)
 	
 	#calculate the positions on the field line where the mirror points would be
 	Alt = MirrorAlt(T,Bm,alpha)
 	AltMid = MirrorAlt(T,BmMid,alphac)
 	
-	return Alt,AltMid,Bm,BmMid,B0
+	#calculate the pitch angle which would reach a bunch of altitudes
+	LCAlt = np.linspace(0.0,1000.0,11)
+	AlphaN,AlphaS,BaltN,BaltS = LossCone(T,B0,LCAlt)
+	
+	
+	out = {}
+	out['Date'] = Date
+	out['ut'] = ut
+	out['utc'] = utc
+	out['Alt'] = Alt
+	out['AltMid'] = AltMid
+	out['Bm'] = Bm
+	out['BmMid'] = BmMid
+	out['B0'] = B0
+	out['AlphaN'] = AlphaN
+	out['AlphaS'] = AlphaS
+	out['BaltN'] = BaltN
+	out['BaltS'] = BaltS
+	out['LCAlt'] = LCAlt
+	return out
 	

@@ -15,6 +15,8 @@ from .RelVelocity import RelVelocity
 from .ColorMap import jetish
 import matplotlib.patheffects as path_effects
 from scipy.stats import mode
+import matplotlib.patheffects as path_effects
+
 
 defargs = {	'tlabel' : 'UT',
 			'elabel' : '$E$ (keV)',
@@ -98,11 +100,10 @@ class PSpecPADCls(object):
 		self.Flux = PADSpec['Flux']
 
 		if not Mirror is None:
-			self.Alt = Mirror['Alt']
-			self.AltMid = Mirror['AltMid']
-			self.BMirror = Mirror['Bm']
-			self.BMirrorMid = Mirror['BmMid']
-			self.B0 = Mirror['B0']
+			keys = ['Alt','AltMid','Bm','BmMid','B0',
+					'AlphaN','AlphaS','BaltN','BaltS','LCAlt']
+			for k in keys:
+				setattr(self,k,Mirror[k])
 	
 		#Process the energy bins
 		self._ProcessEnergy()
@@ -709,8 +710,9 @@ class PSpecPADCls(object):
 						
 		return ax
 	
-	def PlotSpectrogramStack(self,Bins=None,
-			ut=None,fig=None,scale=[1e3,1e9],cmap='gnuplot',zparam='Flux'):
+	def PlotSpectrogramStack(self,Bins=None,ut=None,fig=None,
+				scale=[1e3,1e9],cmap='gnuplot',zparam='Flux',
+				ShowLossCone=True,LCAlt=100.0):
 		'''
 		Plot a stack of spectrograms.
 		
@@ -773,7 +775,7 @@ class PSpecPADCls(object):
 			nox = i != 0
 			tmpax = self.PlotSpectrogram(Bins[i],ut=ut,fig=fig,
 					maps=[1,na,0,na-i-1],cmap=cmap,scale=scale,yparam='alpha',
-					nox=nox,ColorBar=False)
+					nox=nox,ColorBar=False,ShowLossCone=ShowLossCone,LCAlt=LCAlt)
 			title = tmpax.get_title()
 			tmpax.set_title('')
 			tmpax.set_ylabel(r'$\alpha$ ($^\circ$)')
@@ -800,7 +802,7 @@ class PSpecPADCls(object):
 	def PlotSpectrogram(self,Bin,ut=None,fig=None,maps=[1,1,0,0],
 			yparam='E',zparam='Flux',ylog=None,scale=None,zlog=None,
 			cmap='gnuplot',nox=False,noy=False,TickFreq='auto',
-			PosAxis=True,ColorBar=True):
+			PosAxis=True,ColorBar=True,ShowLossCone=True,LCAlt=100.0):
 		'''
 		Plots the spectrogram
 		
@@ -974,7 +976,8 @@ class PSpecPADCls(object):
 			ax.set_ylabel('')
 			ax.yaxis.set_ticks([])
 
-	
+		if ShowLossCone and (yparam == 'alpha'):
+			self._PlotLossCone(ax,LCAlt)
 			
 		#colorbar
 		if ColorBar:
@@ -985,6 +988,57 @@ class PSpecPADCls(object):
 			cbar.set_label(zlabel)	
 		self.currax = ax	
 		return ax
+
+	def _PlotLossCone(self,ax,LCAlt):
+		
+		#interpolate the loss cone altitudes first
+		if LCAlt < 0.0:
+			An = self.AlphaN[:,0]
+			As = self.AlphaS[:,0]
+			
+		elif LCAlt > self.LCAlt[-1]:
+			An = self.AlphaN[:,-1]
+			As = self.AlphaS[:,-1]
+		
+		else:
+			if LCAlt < 200.0:
+				i0 = 2
+				i1 = 3
+			else:
+				i0 = np.where(self.LCAlt <= LCAlt)[0][-1]
+				i1 = np.where(self.LCAlt >= LCAlt)[0][0]
+			if i0 == i1:
+				An = self.AlphaN[:,i0]
+				As = self.AlphaS[:,i0]
+			else:
+				A0 = self.LCAlt[i0]
+				A1 = self.LCAlt[i1]
+				Alpha0N = self.AlphaN[:,i0]
+				Alpha0S = self.AlphaS[:,i0]
+				Alpha1N = self.AlphaN[:,i1]
+				Alpha1S = self.AlphaS[:,i1]
+
+				dAlphaN = Alpha1N - Alpha0N
+				dAlphaS = Alpha1S - Alpha0S
+				dA = A1 - A0
+				dANdA = dAlphaN/dA
+				dASdA = dAlphaS/dA
+
+				CN = Alpha0N
+				CS = Alpha0S
+				
+				An = dANdA*(LCAlt-A0) + CN
+				As = dASdA*(LCAlt-A0) + CS
+
+			
+		#plot North at bottom and South at top
+		ln = ax.plot(self.utc,An,color=[0.0,1.0,0.0],linestyle='--')
+		ls = ax.plot(self.utc,180.0-As,color=[0.0,1.0,0.0],linestyle='--')
+
+		ln[0].set_path_effects([path_effects.Stroke(linewidth=2,foreground='k'),path_effects.Normal()])
+		ls[0].set_path_effects([path_effects.Stroke(linewidth=2,foreground='k'),path_effects.Normal()])
+
+	
 
 	def UpdateTimeAxis(self,ax=None,ut=None,TickFreq='auto'):
 		'''
