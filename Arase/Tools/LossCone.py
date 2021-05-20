@@ -38,7 +38,7 @@ def  _TraceB(S,R,B,z,LCAlts):
 	return Bn,Bs
 	
 	
-def LossCone(T,B0,LCAlt):
+def LossCone(T,B0,LCAlt,Verbose=True):
 	
 	#calculate the B magnitude at each altitude
 	nAlt = np.size(LCAlt)
@@ -47,15 +47,18 @@ def LossCone(T,B0,LCAlt):
 	BaltS = np.zeros((nT,nAlt),dtype='float32')
 	
 	nT = T.n
-	print('Calculating LossCone Fields')
+	if Verbose:
+		print('Calculating Loss Cone Fields')
 	for i in range(0,nT):
-		print('\rTrace {0} of {1}'.format(i+1,nT),end='')
+		if Verbose:
+			print('\rTrace {0} of {1}'.format(i+1,nT),end='')
 		B = np.sqrt(T.Bx[i]**2 + T.By[i]**2 + T.Bz[i]**2)[:np.int32(T.nstep[i])]
 		S = T.s[i][:np.int32(T.nstep[i])]
 		R = T.R[i][:np.int32(T.nstep[i])]
 		z = T.z[i][:np.int32(T.nstep[i])]
 		BaltN[i],BaltS[i] = _TraceB(S,R,B,z,LCAlt)
-	print()
+	if Verbose:
+		print()
 	
 	AlphaN = np.arcsin(np.sqrt(B0/BaltN.T).T)*180/np.pi
 	AlphaS = np.arcsin(np.sqrt(B0/BaltS.T).T)*180/np.pi

@@ -7,7 +7,7 @@ from .. import Globals
 import DateTimeTools as TT
 from .. import MGF
 
-def SaveMirrorAlts(Date,na=18,Overwrite=False):
+def SaveMirrorAlts(Date,na=18,Overwrite=False,Verbose=False):
 	'''
 	Save the mirroring altitudes and field strengths to file.
 	
@@ -37,5 +37,5 @@ def SaveMirrorAlts(Date,na=18,Overwrite=False):
 
 		if (not pad is None) and ((not mirrexists) or Overwrite) and existsmag:
 			Mirror = CalculateMirrorAlt(pad['utc'],na)
-			SaveMirrorAlt(Date,path,Mirror,Overwrite)
+			SaveMirrorAlt(Date,path,Mirror,Overwrite,Verbose=Verbose)
 	

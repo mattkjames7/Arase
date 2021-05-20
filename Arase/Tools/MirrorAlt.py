@@ -38,7 +38,7 @@ def  _TraceAlt(S,R,B,z,Bm):
 	
 	return An,As
 
-def MirrorAlt(T,Bm,alpha):
+def MirrorAlt(T,Bm,alpha,Verbose=True):
 	'''
 	Calculate the mirror altitude in km for a bunch of traces.
 	
@@ -48,15 +48,18 @@ def MirrorAlt(T,Bm,alpha):
 	
 	#loop through one trace at a time
 	nT = T.n
-	print('Calculating Mirror Altitudes')
+	if Verbose:
+		print('Calculating Mirror Altitudes')
 	for i in range(0,nT):
-		print('\rTrace {0} of {1}'.format(i+1,nT),end='')
+		if Verbose:
+			print('\rTrace {0} of {1}'.format(i+1,nT),end='')
 		B = np.sqrt(T.Bx[i]**2 + T.By[i]**2 + T.Bz[i]**2)[:np.int32(T.nstep[i])]
 		S = T.s[i][:np.int32(T.nstep[i])]
 		R = T.R[i][:np.int32(T.nstep[i])]
 		z = T.z[i][:np.int32(T.nstep[i])]
 		AltN[i],AltS[i] = _TraceAlt(S,R,B,z,Bm[i])
-	print()
+	if Verbose:
+		print()
 	
 	#pitch angle < 90 means that the particle should be moving along 
 	#the flux tube in the direction of the field, so should end up in
