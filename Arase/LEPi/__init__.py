@@ -11,3 +11,4 @@ from .ReadIndex import ReadIndex
 from .ReadPAD import ReadPAD
 from .DataAvailability import DataAvailability
 from .PADAvailability import PADAvailability
+from .SaveMirrorAlts import SaveMirrorAlts

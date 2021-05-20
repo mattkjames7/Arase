@@ -18,9 +18,10 @@ def ReadMirrorAlt(Date,path):
 	#read the data
 	f = open(fname,'rb')
 	out = {}
-	out['AltN'] = pf.ArrayFromFile('float32',f)
-	out['AltS'] = pf.ArrayFromFile('float32',f)
+	out['Alt'] = pf.ArrayFromFile('float32',f)
+	out['AltMid'] = pf.ArrayFromFile('float32',f)
 	out['Bm'] = pf.ArrayFromFile('float32',f)
+	out['BmMid'] = pf.ArrayFromFile('float32',f)
 	out['B0'] = pf.ArrayFromFile('float32',f)
 
 	f.close()

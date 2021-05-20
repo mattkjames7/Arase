@@ -98,9 +98,10 @@ class PSpecPADCls(object):
 		self.Flux = PADSpec['Flux']
 
 		if not Mirror is None:
-			self.AltN = Mirror['AltN']
-			self.AltS = Mirror['AltS']
+			self.Alt = Mirror['Alt']
+			self.AltMid = Mirror['AltMid']
 			self.BMirror = Mirror['Bm']
+			self.BMirrorMid = Mirror['BmMid']
 			self.B0 = Mirror['B0']
 	
 		#Process the energy bins

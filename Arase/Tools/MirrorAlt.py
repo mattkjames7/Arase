@@ -38,7 +38,7 @@ def  _TraceAlt(S,R,B,z,Bm):
 	
 	return An,As
 
-def MirrorAlt(T,Bm):
+def MirrorAlt(T,Bm,alpha):
 	'''
 	Calculate the mirror altitude in km for a bunch of traces.
 	
@@ -57,7 +57,14 @@ def MirrorAlt(T,Bm):
 		z = T.z[i][:np.int32(T.nstep[i])]
 		AltN[i],AltS[i] = _TraceAlt(S,R,B,z,Bm[i])
 	print()
+	
+	#pitch angle < 90 means that the particle should be moving along 
+	#the flux tube in the direction of the field, so should end up in
+	#the northern hemisphere
+	Alt = np.copy(AltN)
+	s = np.where(alpha > 90.0)[0]
+	Alt[:,s] = AltS[:,s]
 		
-	return AltN,AltS
+	return Alt
 	
 	

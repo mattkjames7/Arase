@@ -1,9 +1,10 @@
 import numpy as np
 from ..Tools.ReadPAD import ReadPAD as RPAD
+from ..Tools.ReadMirrorAlt import ReadMirrorAlt
 from .. import Globals
 from ..Tools.PSpecPADCls import PSpecPADCls
 
-def ReadPAD(Date,SpecType,ReturnSpecObject=True):
+def ReadPAD(Date,SpecType,ReturnSpecObject=True,ReadMirror=True):
 	'''
 	Date : int
 		Date to download data for in format yyyymmdd
@@ -29,6 +30,10 @@ def ReadPAD(Date,SpecType,ReturnSpecObject=True):
 		Inst = 'HEPH'
 
 	if ReturnSpecObject:
-		return PSpecPADCls(pad,Inst)
+		if ReadMirror:
+			Mirror = ReadMirrorAlt(Date,path)
+			return PSpecPADCls(pad,Inst,Mirror=Mirror)
+		else:
+			return PSpecPADCls(pad,Inst)
 	else:
 		return pad

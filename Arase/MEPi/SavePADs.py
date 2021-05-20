@@ -8,6 +8,8 @@ from ..MGF.DownloadData import DownloadData as DownloadMGF
 from .DownloadData import DownloadData
 from .DeleteDate import DeleteDate
 from ..Tools.ListDates import ListDates
+from .SaveMirrorAlts import SaveMirrorAlts
+import os
 
 def SavePADs(Date,na=18,Overwrite=False,DownloadMissingData=True,
 		DeleteNewData=True,Verbose=True):
@@ -70,3 +72,8 @@ def SavePADs(Date,na=18,Overwrite=False,DownloadMissingData=True,
 
 		if downloadednew and DeleteNewData:
 			DeleteDate(date,2,'3dflux',False)
+
+		#save mirror stuff if needed
+		mirrexists = os.path.isfile(path+ '{:08d}/Mirror.bin'.format(date))
+		if (not mirrexists) or Overwrite:
+			SaveMirrorAlts(date,na,Overwrite)

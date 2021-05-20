@@ -9,6 +9,7 @@ from .DownloadData import DownloadData
 from .DeleteDate import DeleteDate
 from ..Tools.ListDates import ListDates
 from .SaveMirrorAlts import SaveMirrorAlts
+import os
 
 def SavePADs(Date,na=18,Overwrite=False,DownloadMissingData=True,
 		DeleteNewData=True,Verbose=True):

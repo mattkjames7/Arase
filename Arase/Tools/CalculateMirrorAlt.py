@@ -45,12 +45,14 @@ def CalculateMirrorAlt(utc,na):
 	
 	#get the mirror field strength
 	Bm = MirrorField(B0,alpha)
+	BmMid = MirrorField(B0,alphac)
 	
 	#field traces
 	T = gp.TraceField(x,y,z,Date,ut,Model='T96',CoordIn='GSE',CoordOut='SM',Verbose=True)
 	
 	#calculate the positions on the field line where the mirror points would be
-	AltN,AltS = MirrorAlt(T,Bm)
+	Alt = MirrorAlt(T,Bm,alpha)
+	AltMid = MirrorAlt(T,BmMid,alphac)
 	
-	return AltN,AltS,Bm,B0
+	return Alt,AltMid,Bm,BmMid,B0
 	

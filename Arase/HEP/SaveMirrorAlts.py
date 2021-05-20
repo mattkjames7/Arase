@@ -20,7 +20,7 @@ def SaveMirrorAlts(Date,na=18,Overwrite=False):
 	else:
 		dates = np.array([Date]).flatten()
 		
-	path = Globals.DataPath + 'LEPe/PAD/'
+	path = Globals.DataPath + 'HEP/PAD/'
 		
 	#read the data index to see what data we have
 	magidx = MGF.ReadIndex(2,'8sec')
@@ -33,7 +33,7 @@ def SaveMirrorAlts(Date,na=18,Overwrite=False):
 		
 		#check if the mirror file exists
 		mirrexists = os.path.isfile(path+ '{:08d}/Mirror.bin'.format(date))
-		pad = RPAD(date,path,'eFlux')
+		pad = RPAD(date,path,'eFluxL')
 
 		if (not pad is None) and ((not mirrexists) or Overwrite) and existsmag:
 			Alt,AltMid,Bm,BmMid,B0 = CalculateMirrorAlt(pad['utc'],na)

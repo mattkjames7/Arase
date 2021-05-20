@@ -20,7 +20,7 @@ def SaveMirrorAlts(Date,na=18,Overwrite=False):
 	else:
 		dates = np.array([Date]).flatten()
 		
-	path = Globals.DataPath + 'LEPe/PAD/'
+	path = Globals.DataPath + 'MEPe/PAD/'
 		
 	#read the data index to see what data we have
 	magidx = MGF.ReadIndex(2,'8sec')
