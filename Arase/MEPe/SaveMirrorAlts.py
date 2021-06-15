@@ -36,6 +36,6 @@ def SaveMirrorAlts(Date,na=18,Overwrite=False,Verbose=False):
 		pad = RPAD(date,path,'eFlux')
 
 		if (not pad is None) and ((not mirrexists) or Overwrite) and existsmag:
-			Mirror = CalculateMirrorAlt(pad['utc'],na)
-			SaveMirrorAlt(Date,path,Mirror,Overwrite,Verbose=Verbose)
+			Mirror = CalculateMirrorAlt(pad['utc'],na,Verbose=Verbose)
+			SaveMirrorAlt(Date,path,Mirror,Overwrite)
 	

@@ -76,4 +76,4 @@ def SavePADs(Date,na=18,Overwrite=False,DownloadMissingData=True,
 		#save mirror stuff if needed
 		mirrexists = os.path.isfile(path+ '{:08d}/Mirror.bin'.format(date))
 		if (not mirrexists) or Overwrite:
-			SaveMirrorAlts(date,na,Overwrite)
+			SaveMirrorAlts(date,na,Overwrite,Verbose=Verbose)
