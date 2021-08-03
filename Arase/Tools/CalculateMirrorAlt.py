@@ -41,7 +41,7 @@ def CalculateMirrorAlt(utc,na,Verbose=True):
 	mutc = TT.ContUT(mag.Date,mag.ut)
 	B = np.sqrt(mag.BxSM**2 + mag.BySM**2 + mag.BzSM**2)
 	gdb = np.where(np.isfinite(B))[0]
-	fB = interp1d(mutc[gdb],B[gdb])
+	fB = interp1d(mutc[gdb],B[gdb],bounds_error=False,fill_value='extrapolate')
 	B0 = fB(utc)
 	
 	#get the mirror field strength
@@ -52,12 +52,12 @@ def CalculateMirrorAlt(utc,na,Verbose=True):
 	T = gp.TraceField(x,y,z,Date,ut,Model='T96',CoordIn='GSE',CoordOut='SM',Verbose=Verbose,Alt=0.0)
 	
 	#calculate the positions on the field line where the mirror points would be
-	Alt = MirrorAlt(T,Bm,alpha)
-	AltMid = MirrorAlt(T,BmMid,alphac)
+	Alt = MirrorAlt(T,Bm,alpha,Verbose=Verbose)
+	AltMid = MirrorAlt(T,BmMid,alphac,Verbose=Verbose)
 	
 	#calculate the pitch angle which would reach a bunch of altitudes
 	LCAlt = np.linspace(0.0,1000.0,11)
-	AlphaN,AlphaS,BaltN,BaltS = LossCone(T,B0,LCAlt)
+	AlphaN,AlphaS,BaltN,BaltS = LossCone(T,B0,LCAlt,Verbose=Verbose)
 	
 	
 	out = {}

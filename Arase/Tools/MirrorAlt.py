@@ -15,20 +15,26 @@ def  _TraceAlt(S,R,B,z,Bm):
 	
 	#north
 	indn = np.where((dRdS < 0) & (zc > 0))[0]
-	if indn.size > 0:
+	if indn.size > 1:
 		indn = indn[-1]
-		fn = interp1d(B[:indn][::-1],R[:indn][::-1],bounds_error=False,fill_value=np.nan)
-		Rn = fn(Bm)
+		try:
+			fn = interp1d(B[:indn][::-1],R[:indn][::-1],bounds_error=False,fill_value=np.nan)
+			Rn = fn(Bm)
+		except:
+			Rn = np.zeros(Bm.size,dtype='float32') + np.nan
 	else:
 		Rn = np.zeros(Bm.size,dtype='float32') + np.nan
 	
 	
 	
 	inds = np.where((dRdS > 0) & (zc < 0))[0]
-	if inds.size > 0:
+	if inds.size > 1:
 		inds = inds[0]
-		fs = interp1d(B[inds:],R[inds:],bounds_error=False,fill_value=np.nan)
-		Rs = fs(Bm)
+		try:
+			fs = interp1d(B[inds:],R[inds:],bounds_error=False,fill_value=np.nan)
+			Rs = fs(Bm)
+		except:
+			Rn = np.zeros(Bm.size,dtype='float32') + np.nan
 	else:
 		Rs = np.zeros(Bm.size,dtype='float32') + np.nan
 
@@ -48,8 +54,7 @@ def MirrorAlt(T,Bm,alpha,Verbose=True):
 	
 	#loop through one trace at a time
 	nT = T.n
-	if Verbose:
-		print('Calculating Mirror Altitudes')
+	print('Calculating Mirror Altitudes')
 	for i in range(0,nT):
 		if Verbose:
 			print('\rTrace {0} of {1}'.format(i+1,nT),end='')

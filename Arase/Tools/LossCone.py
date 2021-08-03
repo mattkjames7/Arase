@@ -18,7 +18,7 @@ def  _TraceB(S,R,B,z,LCAlts):
 	
 	#north
 	indn = np.where((dRdS < 0) & (zc > 0))[0]
-	if indn.size > 0:
+	if indn.size > 1:
 		indn = indn[-1]
 		fn = interp1d(R[:indn][::-1],B[:indn][::-1],bounds_error=False,fill_value=np.nan)
 		Bn = fn(Ralts)
@@ -28,7 +28,7 @@ def  _TraceB(S,R,B,z,LCAlts):
 	
 	
 	inds = np.where((dRdS > 0) & (zc < 0))[0]
-	if inds.size > 0:
+	if inds.size > 1:
 		inds = inds[0]
 		fs = interp1d(R[inds:],B[inds:],bounds_error=False,fill_value=np.nan)
 		Bs = fs(Ralts)
@@ -47,8 +47,7 @@ def LossCone(T,B0,LCAlt,Verbose=True):
 	BaltS = np.zeros((nT,nAlt),dtype='float32')
 	
 	nT = T.n
-	if Verbose:
-		print('Calculating Loss Cone Fields')
+	print('Calculating Loss Cone Fields')
 	for i in range(0,nT):
 		if Verbose:
 			print('\rTrace {0} of {1}'.format(i+1,nT),end='')
