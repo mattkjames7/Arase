@@ -33,5 +33,5 @@ def DataAvailability(subcomp,L,prod):
 		Array of dates which have data
 	
 	'''
-	idx = ReadIndex(L,prod)
+	idx = ReadIndex(subcomp,L,prod)
 	return np.unique(idx.Date)
