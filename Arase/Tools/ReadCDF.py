@@ -15,7 +15,7 @@ def ReadCDF(fname,Verbose=True):
 	f = cdflib.CDF(fname)
 	
 	#get the list of zVariables
-	var = f.cdf_info()['zVariables']
+	var = f.cdf_info().zVariables
 	
 	#create ouput dicts
 	data = {}
