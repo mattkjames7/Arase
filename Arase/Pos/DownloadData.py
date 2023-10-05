@@ -2,13 +2,23 @@ from .. import Globals
 import numpy as np
 from ..Tools.Downloading._DownloadData import _DownloadData
 from ..Tools.ListDates import ListDates
+from ..Tools.GetCurrentDate import GetCurrentDate
 
-def DownloadData(prod,Date=[20170101,20200101],Overwrite=False,Verbose=False):
+def DownloadData(prod='def',Date=[20170101,None],Overwrite=False,Verbose=False):
 	'''
 	Downloads Arase position data.
 
-	prod : 'l3' or 'def'
-	
+	Inputs
+	======
+	prod : str
+		'l3' or 'def' - 'def' is the default and is what is used by other routines.
+	Date : int|list
+		Single date, pair of dates (as a range) or list of 3 or more specific dates.
+	Overwrite : bool
+		Force overwriting of data files.
+	Verbose : bool
+		More output if True.
+		
 	'''
 	url0 = 'https://ergsc.isee.nagoya-u.ac.jp/data/ergsc/satellite/erg/orb/{:s}/'.format(prod)
 	vfmt = ['v']	
@@ -17,8 +27,12 @@ def DownloadData(prod,Date=[20170101,20200101],Overwrite=False,Verbose=False):
 
 	#populate the list of dates to download
 	if np.size(Date) == 1:
+		if Date is None:
+			Date = GetCurrentDate()
 		dates = np.array([Date])
 	elif np.size(Date) == 2:
+		if Date[1] is None:
+			Date[1] = GetCurrentDate()
 		dates = ListDates(Date[0],Date[1])
 	else:
 		dates = np.array([Date]).flatten()

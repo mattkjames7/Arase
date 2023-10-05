@@ -516,8 +516,8 @@ class PSpecCls(object):
 				x = E
 					
 			#fit spectrum
-			if (not FitKappa is False):
-				if FitKappa is 'counts':
+			if (not (FitKappa == False)):
+				if FitKappa == 'counts':
 					nk,Tk,K,statk = FitKappaDistCtsE(E,C,n0*1e6,T0*1e6,self.Mass,Verbose=True,MaxIter=MaxIter)
 				else:
 					nk,Tk,K,statk = FitKappaDistE(E,spec,n0*1e6,T0*1e6,self.Mass,Verbose=True,MaxIter=MaxIter)
@@ -529,8 +529,8 @@ class PSpecCls(object):
 				
 				ax.plot(x,y,color='pink',linestyle='--',label=r'Kappa Fit: $n_{\kappa}$=' + '{:5.2f}'.format(nk/1e6)+r' cm$^{-3}$,'+'\n'+'$T_{\kappa}$='+'{:5.2f}'.format(Tk/1e6)+r' MK, $\kappa$='+'{:5.1f}'.format(K))
 
-			if (not FitMaxwellian is False):
-				if FitMaxwellian is 'counts':
+			if (not (FitMaxwellian == False)):
+				if FitMaxwellian == 'counts':
 					nm,Tm,statm = FitMaxwellianDistCtsE(E,C,n0*1e6,T0*1e6,self.Mass,MaxIter=MaxIter)
 				else:
 					nm,Tm,statm = FitMaxwellianDistE(E,spec,n0*1e6,T0*1e6,self.Mass,Verbose=True,MaxIter=MaxIter)

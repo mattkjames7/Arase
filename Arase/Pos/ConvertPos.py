@@ -13,7 +13,7 @@ def _MagGeo(xm,ym,zm,Date,ut):
 	r = np.sqrt(xm**2 + ym**2 + zm**2)
 	mlon = np.arctan2(ym,xm)*180.0/np.pi
 	mlat = np.arctan2(zm,np.sqrt(ym**2 + xm**2))*180.0/np.pi
-	glon,glat = gp.MAGtoGEOLL(mlon,mlat,Date,ut)
+	glon,glat = gp.Coords.MAGtoGEOLL(mlon,mlat,Date,ut)
 	xg = r*np.cos(mlon)*np.cos(mlat)
 	yg = r*np.sin(mlon)*np.cos(mlat)
 	zg = r*np.sin(mlat)
@@ -87,7 +87,7 @@ def ConvertPos():
 			
 			#use PyGeopack to get the geo and mag coords
 			for j in range(0,1440):
-				out.Xgm[p+j],out.Ygm[p+j],out.Zgm[p+j] = gp.GSEtoMAG(out.Xgse[p+j],out.Ygse[p+j],out.Zgse[p+j],dates[i],ut[j])
+				out.Xgm[p+j],out.Ygm[p+j],out.Zgm[p+j] = gp.Coords.GSEtoMAG(out.Xgse[p+j],out.Ygse[p+j],out.Zgse[p+j],dates[i],ut[j])
 				#out.Xgeo[p+j],out.Ygeo[p+j],out.Zgeo[p+j] = gp.MAGtoGEOUT(out.Xgm[p+j],out.Ygm[p+j],out.Zgm[p+j],dates[i],ut[j])
 				out.Xgeo[p+j],out.Ygeo[p+j],out.Zgeo[p+j] = _MagGeo(out.Xgm[p+j],out.Ygm[p+j],out.Zgm[p+j],dates[i],ut[j])
 			p += 1440

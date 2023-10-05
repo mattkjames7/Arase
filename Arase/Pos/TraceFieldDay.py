@@ -33,7 +33,7 @@ def TraceFieldDay(Date,Model='T96',Verbose=True):
 	out = np.recarray(n,dtype=dtype)
 	
 	#do the tracing
-	T = gp.TraceField(pos.Xsm,pos.Ysm,pos.Zsm,pos.Date,pos.ut,Model=Model,CoordIn='SM',Verbose=Verbose)
+	T = gp.TraceField(pos.Xsm,pos.Ysm,pos.Zsm,pos.Date,pos.ut,Model=Model,CoordIn='SM',Verbose=Verbose,alpha=[])
 	
 	#insert data into output array
 	out.Date = pos.Date
@@ -63,10 +63,9 @@ def TraceFieldDay(Date,Model='T96',Verbose=True):
 	out.Xsm = pos.Xsm
 	out.Ysm = pos.Ysm
 	out.Zsm = pos.Zsm
-	out.Tilt = gp.GetDipoleTilt(out.Date,out.ut)
+	out.Tilt = gp.Params.GetDipoleTilt(out.Date,out.ut)
 	
 	Rs = np.sqrt(pos.Xsm**2 + pos.Ysm**2 + pos.Zsm**2)
-	Rt = np.sqrt(T.x**2 + T.y**2 + T.z**2)
 
 	out.Rmax = out.Lshell
 	out.Rnorm = Rs/out.Rmax

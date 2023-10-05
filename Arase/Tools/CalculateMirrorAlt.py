@@ -8,7 +8,7 @@ from ..MGF.ReadMGF import ReadMGF
 from .MirrorAlt import MirrorAlt
 from .LossCone import LossCone
 
-def CalculateMirrorAlt(utc,na):
+def CalculateMirrorAlt(utc,na,Verbose=True):
 	'''
 	Given an array of continuous time and a number of pitch angle bins,
 	calculate the altitude at which the particles should mirror using
@@ -41,7 +41,7 @@ def CalculateMirrorAlt(utc,na):
 	mutc = TT.ContUT(mag.Date,mag.ut)
 	B = np.sqrt(mag.BxSM**2 + mag.BySM**2 + mag.BzSM**2)
 	gdb = np.where(np.isfinite(B))[0]
-	fB = interp1d(mutc[gdb],B[gdb])
+	fB = interp1d(mutc[gdb],B[gdb],bounds_error=False,fill_value='extrapolate')
 	B0 = fB(utc)
 	
 	#get the mirror field strength
@@ -49,15 +49,15 @@ def CalculateMirrorAlt(utc,na):
 	BmMid = MirrorField(B0,alphac)
 	
 	#field traces
-	T = gp.TraceField(x,y,z,Date,ut,Model='T96',CoordIn='GSE',CoordOut='SM',Verbose=True,Alt=0.0)
+	T = gp.TraceField(x,y,z,Date,ut,Model='T96',CoordIn='GSE',CoordOut='SM',Verbose=Verbose,Alt=0.0)
 	
 	#calculate the positions on the field line where the mirror points would be
-	Alt = MirrorAlt(T,Bm,alpha)
-	AltMid = MirrorAlt(T,BmMid,alphac)
+	Alt = MirrorAlt(T,Bm,alpha,Verbose=Verbose)
+	AltMid = MirrorAlt(T,BmMid,alphac,Verbose=Verbose)
 	
 	#calculate the pitch angle which would reach a bunch of altitudes
 	LCAlt = np.linspace(0.0,1000.0,11)
-	AlphaN,AlphaS,BaltN,BaltS = LossCone(T,B0,LCAlt)
+	AlphaN,AlphaS,BaltN,BaltS = LossCone(T,B0,LCAlt,Verbose=Verbose)
 	
 	
 	out = {}
