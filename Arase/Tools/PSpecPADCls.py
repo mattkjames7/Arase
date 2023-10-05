@@ -94,8 +94,8 @@ class PSpecPADCls(object):
 		self.Date = PADSpec['Date']
 		self.ut = PADSpec['ut']
 		self.utc = PADSpec['utc']
-		self.Emax = PADSpec['Emin']
-		self.Emin = PADSpec['Emax']
+		self.Emax = PADSpec['Emax']
+		self.Emin = PADSpec['Emin']
 		self.Alpha = PADSpec['Alpha']
 		self.Flux = PADSpec['Flux']
 
