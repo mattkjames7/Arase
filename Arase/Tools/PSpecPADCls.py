@@ -154,7 +154,7 @@ class PSpecPADCls(object):
 		
 		#sort everything in ascending order of energy
 		if len(self.Emid.shape) == 2:
-			m,_ = mode(self.Emid,axis=0)
+			m,_ = mode(self.Emid,axis=0,keepdims=True)
 			srt = np.argsort(m[0])
 			self.Emid = self.Emid[:,srt]
 			self.Emin = self.Emin[:,srt]
@@ -396,7 +396,7 @@ class PSpecPADCls(object):
 		
 		
 		#get the current date
-		Date = mode(self.Date)[0][0]
+		Date = mode(self.Date,keepdims=True)[0][0]
 		
 		#get the utc
 		utc = TT.ContUT(Date,ut)[0]
@@ -443,7 +443,7 @@ class PSpecPADCls(object):
 		'''
 	
 		#get the current date
-		Date = mode(self.Date)[0][0]
+		Date = mode(self.Date,keepdims=True)[0][0]
 		
 		#get the utc
 		utc = TT.ContUT(Date,ut)[0]
@@ -567,7 +567,7 @@ class PSpecPADCls(object):
 		ax.set_xlabel(xlabel)
 		ax.set_ylabel(ylabel)
 
-		Date = mode(self.Date)[0][0]
+		Date = mode(self.Date,keepdims=True)[0][0]
 		hh,mm,ss,_ = TT.DectoHHMM(ut)
 		ax.set_title('{:08d} {:02d}:{:02d}:{:02d} UT, Bin {:d}'.format(Date,hh[0],mm[0],ss[0],Bin))			
 				
@@ -704,7 +704,7 @@ class PSpecPADCls(object):
 		cbar.set_label(zlabel)		
 		
 		#get the title
-		Date = mode(self.Date)[0][0]
+		Date = mode(self.Date,keepdims=True)[0][0]
 		hh,mm,ss = TT.DectoHHMM(ut,ss=True,Split=True)
 		ax.set_title('{:08d} {:02d}:{:02d}:{:02d} UT'.format(Date,hh,mm,ss))	
 						
@@ -872,7 +872,7 @@ class PSpecPADCls(object):
 		if ut is None:
 			ax.set_xlim(self._utlim)
 		else:
-			Date = mode(self.Date)[0][0]
+			Date = mode(self.Date,keepdims=True)[0][0]
 			utclim = TT.ContUT(np.array([Date,Date]),np.array(ut))
 			ax.set_xlim(utclim)
 			
@@ -958,7 +958,7 @@ class PSpecPADCls(object):
 		else:
 			#sort the UT axis out
 			if PosAxis:
-				Date = mode(self.Date)[0][0]
+				Date = mode(self.Date,keepdims=True)[0][0]
 				Pos = ReadFieldTraces(Date)
 				
 				#get the Lshell, Mlat and Mlon
@@ -1064,13 +1064,13 @@ class PSpecPADCls(object):
 			
 		#check if we need to resize
 		if not ut is None:
-			Date = mode(self.Date)[0][0]
+			Date = mode(self.Date,keepdims=True)[0][0]
 			utclim = TT.ContUT(np.array([Date,Date]),np.array(ut))
 			ax.set_xlim(utclim)		
 			
 		#now update the axis
 		if PosAxis:
-			Date = mode(self.Date)[0][0]
+			Date = mode(self.Date,keepdims=True)[0][0]
 			
 			Pos = ReadFieldTraces(Date)
 			
