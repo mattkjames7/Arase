@@ -109,7 +109,7 @@ def PosDTPlotLabel(fig,ut,date,fL,fLon,fLat,Seconds=False,TickFreq='default'):
 			yr = yr[0]
 			mn = mn[0]
 			dy = dy[0]
-			datestr = '{:02d} '.format(np.int(dy))+Months[mn-1]
+			datestr = '{:02d} '.format(int(dy))+Months[mn-1]
 			datestr += '\n{:04d}'.format(yr)
 			labels[i] += '\n'+datestr
 		
