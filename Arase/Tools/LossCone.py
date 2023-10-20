@@ -51,10 +51,10 @@ def LossCone(T,B0,LCAlt,Verbose=True):
 	for i in range(0,nT):
 		if Verbose:
 			print('\rTrace {0} of {1}'.format(i+1,nT),end='')
-		B = np.sqrt(T.Bx[i]**2 + T.By[i]**2 + T.Bz[i]**2)[:np.int32(T.nstep[i])]
+		B = np.sqrt(T.Bxsm[i]**2 + T.Bysm[i]**2 + T.Bzsm[i]**2)[:np.int32(T.nstep[i])]
 		S = T.s[i][:np.int32(T.nstep[i])]
 		R = T.R[i][:np.int32(T.nstep[i])]
-		z = T.z[i][:np.int32(T.nstep[i])]
+		z = T.zsm[i][:np.int32(T.nstep[i])]
 		BaltN[i],BaltS[i] = _TraceB(S,R,B,z,LCAlt)
 	if Verbose:
 		print()
