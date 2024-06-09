@@ -77,6 +77,8 @@ def ReadEFD(Date):
 				
 		#now to store the spectra
 		for k in list(fields.keys()):
+			if not k in data:
+				continue
 			spec = data[k]
 			bad = np.where(spec < 0)
 			spec[bad] = np.nan
